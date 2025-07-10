@@ -12,6 +12,14 @@ This repository exposes reusable GitHub Actions for common tasks.
 
 <!-- END AUTO-ACTIONS -->
 
+## 📚 Shared Workflows
+
+The following reusable workflows are available in this repository:
+
+- [Common workflow](./github/workflows/README.md#common-workflow-workflow)
+
+<!-- END SHARED WORKFLOWS -->
+
 ## Development
 
 ### Pre-commit hooks
@@ -22,3 +30,13 @@ install the pre-commit hooks by running:
 ```bash
 pre-commit install
 ```
+
+<!-- BEGIN SHARED WORKFLOWS -->
+
+## 📚 Shared Workflows
+
+The following reusable workflows are available in this repository:
+
+- [Common workflow](./github/workflows/README.md#common-workflow-workflow)
+
+<!-- END SHARED WORKFLOWS -->

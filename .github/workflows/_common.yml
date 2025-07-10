@@ -1,0 +1,12 @@
+name: 'Common PR workflow'
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  common:
+    uses: ./.github/workflows/common.yml
+    secrets:
+      GITHUB_SECRET: ${{ secrets.GITHUB_SECRET }}
