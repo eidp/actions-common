@@ -2,6 +2,9 @@ name: Update major version tag
 description: |
   This action updates or creates a major version tag based on the latest semver tag pushed to the repository. If the major version tag already exists, it updates it to point to the latest commit; otherwise, it creates a new major version tag.
   Make sure that this action is only triggered for semver tags.
+  This action is used for managing major version tags in a GitHub repository, ensuring that the major version tag always points to the latest commit of the corresponding major version.
+  This is useful for repositories that contain shared workflows.
+  Normally, you can only refer to a shared workflow by the full tag, but this action allows you to refer to the major version tag, which is more convenient.
 
   ```yaml
   on:
