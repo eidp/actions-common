@@ -1,0 +1,25 @@
+repos:
+- repo: local
+  hooks:
+  - id: generate-action-list
+    name: Update Action list
+    entry: uv run ./scripts/generate-action-list.py
+    language: system
+    files: '^\.github/actions/.*/action\.ya?ml$'
+    pass_filenames: false
+  - id: generate-action-docs
+    name: Update Action docs
+    entry: uv run ./scripts/generate-action-docs.py
+    language: system
+    files: '^\.github/actions/.*/action\.ya?ml$'
+    pass_filenames: false
+  - id: generate-workflow-docs
+    name: Update shared workflow docs
+    entry: uv run scripts/generate-workflow-docs.py
+    language: system
+    files: '^\.github/workflows/.*\.ya?ml$'
+    pass_filenames: false
+- repo: https://github.com/codespell-project/codespell
+  rev: v2.4.1
+  hooks:
+  - id: codespell
