@@ -8,7 +8,10 @@ The tasks include:
 - labelling pull requests based on commit messages using the conventional commits standard.
 
 This workflow requires the following GitHub permissions:
-- `Read and write` access to `Pull requests`
+```yaml
+permissions:
+  pull-requests: write
+```
 
 <!-- BEGIN WORKFLOW INPUT DOCS: Common workflow -->
 
