@@ -7,6 +7,9 @@ This workflow runs a number of very common tasks that are useful in many reposit
 The tasks include:
 - labelling pull requests based on commit messages using the conventional commits standard.
 
+This workflow requires the following GitHub permissions:
+- `Read and write` access to `Pull requests`
+
 <!-- BEGIN WORKFLOW INPUT DOCS: Common workflow -->
 
 ### 🔧 Inputs
@@ -15,9 +18,7 @@ _None_
 
 ### 🔐 Secrets
 
-|Name           |Description                                                                                                                                     |Required|
-|---------------|------------------------------------------------------------------------------------------------------------------------------------------------|--------|
-|`GITHUB_TOKEN` |GitHub token used for authentication in various actions. This is automatically provided by GitHub Actions and does not need to be set manually. |Yes     |
+_None_
 
 ### 📤 Outputs
 

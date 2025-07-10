@@ -8,5 +8,3 @@ on:
 jobs:
   common:
     uses: ./.github/workflows/common.yml
-    secrets:
-      GITHUB_SECRET: ${{ secrets.GITHUB_SECRET }}

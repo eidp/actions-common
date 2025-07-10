@@ -1,13 +1,7 @@
 name: Common workflow
 
 on:
-  workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        description: >
-          GitHub token used for authentication in various actions.
-          This is automatically provided by GitHub Actions and does not need to be set manually.
-        required: true
+  workflow_call: {}
 
 jobs:
   assign-pr-labels:
@@ -21,14 +15,14 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         conventional-commits: |
           conventional-commits:
-            - type: 'fix'
-              nouns: ['FIX', 'Fix', 'fix', 'FIXED', 'Fixed', 'fixed']
-              labels: ['bug']
-            - type: 'feature'
-              nouns: ['FEATURE', 'Feature', 'feature', 'FEAT', 'Feat', 'feat']
-              labels: ['feature']
-            - type: 'breaking_change'
-              nouns: ['BREAKING CHANGE', 'BREAKING', 'MAJOR']
-              labels: ['BREAKING CHANGE']
+          - type: 'fix'
+            nouns: ['FIX', 'Fix', 'fix', 'FIXED', 'Fixed', 'fixed']
+            labels: ['bug']
+          - type: 'feature'
+            nouns: ['FEATURE', 'Feature', 'feature', 'FEAT', 'Feat', 'feat']
+            labels: ['feature']
+          - type: 'breaking_change'
+            nouns: ['BREAKING CHANGE', 'BREAKING', 'MAJOR']
+            labels: ['BREAKING CHANGE']
         maintain-labels-not-matched: false
         apply-changes: true
