@@ -1,0 +1,17 @@
+name: Release
+
+on:
+  push:
+    tags:
+    - 'v[0-9]+.[0-9]+.[0-9]+'
+
+jobs:
+  update-major-version-tag:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Update Major Version Tag
+      id: update_major_version_tag
+      uses: ./.github/actions/update-major-version-tag

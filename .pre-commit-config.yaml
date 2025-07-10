@@ -19,6 +19,12 @@ repos:
     language: system
     files: '^\.github/workflows/.*\.ya?ml$'
     pass_filenames: false
+  - id: generate-workflow-list
+    name: Update shared workflow list
+    entry: uv run scripts/generate-workflow-list.py
+    language: system
+    files: '^\.github/workflows/.*\.ya?ml$'
+    pass_filenames: false
 - repo: https://github.com/codespell-project/codespell
   rev: v2.4.1
   hooks:
