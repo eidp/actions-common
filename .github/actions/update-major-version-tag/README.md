@@ -14,6 +14,12 @@ on:
     tags:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 ```
+
+This actions requires the following permissions:
+```yaml
+  permissions:
+    contents: write
+```
 <!-- BEGIN ACTION DOCS: Update major version tag -->
 
 ## 🔧 Inputs
