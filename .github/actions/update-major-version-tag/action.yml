@@ -17,6 +17,11 @@ inputs:
       If not provided, it will use the tag from the GitHub context.
     required: false
     default: ''
+outputs:
+  major_tag:
+    description: >
+      The created or updated major version tag, e.g., `v1` for a tag like `v1.2.3`.
+    value: ${{ steps.update.outputs.major_tag }}
 runs:
   using: 'composite'
   steps:
@@ -59,4 +64,5 @@ runs:
             sha: commitSha
           });
           console.log(`Created tag ${majorTag} at ${commitSha}`);
-        }
+
+        core.setOutput('major_tag', majorTag);

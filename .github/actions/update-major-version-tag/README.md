@@ -21,7 +21,9 @@ on:
 
 ## 📤 Outputs
 
-_None_
+|    Name   |                                 Description                                 |
+|-----------|-----------------------------------------------------------------------------|
+|`major_tag`|The created or updated major version tag, e.g., `v1` for a tag like `v1.2.3`.|
 
 ## 🚀 Usage
 

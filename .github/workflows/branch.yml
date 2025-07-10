@@ -9,28 +9,36 @@ permissions:
   contents: write
 
 jobs:
-  create-test-tag:
+  test-update-major-version-tag:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Create test tag
       id: create_tag
       run: |
-        TAG="v100.0.0-${{ github.run_id }}.${{ github.run_attempt }}"
+        TAG="v$((RANDOM % 99001 + 100)).0.0-${{ github.run_id }}.${{ github.run_attempt }}"
+        MAJOR_TAG="v$(echo $TAG | cut -d. -f1)"
         git tag $TAG
         git push origin $TAG
         echo "tag=$TAG" >> $GITHUB_OUTPUT
+        echo "major_tag=$MAJOR_TAG" >> $GITHUB_OUTPUT
     - name: Use update-major-version-tag action
       id: update_major_version_tag
       uses: ./.github/actions/update-major-version-tag
       with:
         tag: ${{ steps.create_tag.outputs.tag }}
 
+    - name: Assert Version Output
+      uses: nick-fields/assert-action@v1
+      with:
+        expected: ${{ steps.create_tag.outputs.major_tag }}
+        actual: ${{ steps.update_major_version_tag.outputs.major_tag }}
+
     - name: Check major version tag
       run: |
-        MAJOR_TAG="v100"
+        MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
         git fetch --tags
         if git rev-parse "$MAJOR_TAG" >/dev/null 2>&1; then
         echo "Major version tag $MAJOR_TAG exists."
@@ -44,6 +52,6 @@ jobs:
       run: |
         git tag -d ${{ steps.create_tag.outputs.tag }}
         git push origin :refs/tags/${{ steps.create_tag.outputs.tag }}
-        MAJOR_TAG="v100"
+        MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
         git tag -d $MAJOR_TAG
         git push origin :refs/tags/$MAJOR_TAG
