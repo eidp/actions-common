@@ -118,6 +118,9 @@ jobs:
 
   check-workflow-status:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     steps:
     - name: Checkout Code
       uses: actions/checkout@v4
