@@ -38,17 +38,32 @@ runs:
       response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
       http_status="${response: -3}"
       response_body="${response:0:${#response}-3}"
+      if [[ "$http_status" != "200" ]]; then
       echo "HTTP response status: $http_status"
+      fi
       if [[ "$(echo "$response_body" | jq -r '.jobs')" == "null" ]]; then
         echo "No jobs found in API response. Check permissions, token, and run ID."
         exit 1
       fi
-      echo "Jobs found: $(echo "$response_body" | jq -r '.jobs[].name' | paste -sd "," -)"
       for job in "${JOB_LIST[@]}"; do
         job=$(echo "$job" | xargs)
+        job_found=""
+        max_attempts=10
+        attempt=1
+        while [[ -z "$job_found" && $attempt -le $max_attempts ]]; do
         job_found=$(echo "$response_body" | jq -r ".jobs[] | select(.name==\"$job\") | .name")
         if [[ -z "$job_found" ]]; then
-          echo "Job '$job' does not exist."
+            echo "Job '$job' not found. Attempt $attempt/$max_attempts. Waiting..."
+            sleep 2
+            response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
+            http_status="${response: -3}"
+            response_body="${response:0:${#response}-3}"
+            ((attempt++))
+          fi
+        done
+        if [[ -z "$job_found" ]]; then
+          echo "Jobs found: $(echo "$response_body" | jq -r '.jobs[].name' | paste -sd "," -)"
+          echo "Job '$job' does not exist after $max_attempts attempts."
           exit 1
         fi
         while true; do
@@ -59,9 +74,13 @@ runs:
             response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
             http_status="${response: -3}"
             response_body="${response:0:${#response}-3}"
-            echo "HTTP response status: $http_status"
+            if [[ "$http_status" != "200" ]]; then
+              echo "HTTP response status: $http_status"
+            fi
           else
-            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+            if [[ "$result" == "success" ]]; then
+              echo "Job '$job' completed successfully."
+            elif [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
               echo "Job '$job' failed or was cancelled."
               exit 1
             fi
