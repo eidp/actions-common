@@ -29,7 +29,7 @@ jobs:
         echo "major_tag=$MAJOR_TAG" >> $GITHUB_OUTPUT
     - name: Use update-major-version-tag action
       id: update_major_version_tag
-      uses: ./.github/actions/update-major-version-tag
+      uses: ./update-major-version-tag
       with:
         tag: ${{ steps.create_tag.outputs.tag }}
 

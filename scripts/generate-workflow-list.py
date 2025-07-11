@@ -7,7 +7,7 @@ import yaml
 from pathlib import Path
 import re
 
-WORKFLOWS_DIR = Path(".github/workflows")
+WORKFLOWS_DIR = Path("workflows")
 README_PATH = Path("README.md")
 LIST_HEADER = "## 📚 Shared Workflows"
 MARKER_START = "<!-- BEGIN SHARED WORKFLOWS -->"
@@ -32,7 +32,7 @@ def generate_shared_workflow_list() -> str:
 
         name = data.get("name", wf_file.stem)
         slug = create_slug(name)
-        items.append(f"- [{name}](./github/workflows/README.md#{slug})")
+        items.append(f"- [{name}](./workflows/README.md#{slug})")
 
     if not items:
         return ""

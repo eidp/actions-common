@@ -1,31 +1,13 @@
-name: Common workflow
+name: common
 
 on:
-  workflow_call: {}
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
 
 jobs:
-  assign-pr-labels:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Assign PR Labels
-      id: assign-labels
-      uses: mauroalderete/action-assign-labels@v1
-      with:
-        pull-request-number: ${{ github.event.pull_request.number }}
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        conventional-commits: |
-          conventional-commits:
-          - type: 'fix'
-            nouns: ['FIX', 'Fix', 'fix', 'FIXED', 'Fixed', 'fixed']
-            labels: ['bug']
-          - chore: 'chore'
-            nouns: ['CHORE', 'Chore', 'chore']
-            labels: ['enhancement']
-          - type: 'feature'
-            nouns: ['FEATURE', 'Feature', 'feature', 'FEAT', 'Feat', 'feat']
-            labels: ['feature']
-          - type: 'breaking_change'
-            nouns: ['BREAKING CHANGE', 'BREAKING', 'MAJOR']
-            labels: ['BREAKING CHANGE']
-        maintain-labels-not-matched: false
-        apply-changes: true
+  common:
+    uses: ./workflows/common.yml
