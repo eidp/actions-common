@@ -17,4 +17,4 @@ jobs:
 
     - name: Update Major Version Tag
       id: update_major_version_tag
-      uses: ./.github/actions/update-major-version-tag
+      uses: ./update-major-version-tag

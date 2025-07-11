@@ -7,7 +7,7 @@ import yaml
 from pathlib import Path
 import re
 
-WORKFLOWS_DIR = Path("workflows")
+WORKFLOWS_DIR = Path(".github/workflows")
 README_PATH = Path("README.md")
 LIST_HEADER = "## 📚 Shared Workflows"
 MARKER_START = "<!-- BEGIN SHARED WORKFLOWS -->"

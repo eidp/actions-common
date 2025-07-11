@@ -13,7 +13,7 @@ permissions:
   pull-requests: write
 ```
 
-<!-- BEGIN WORKFLOW INPUT DOCS: Common workflow -->
+<!-- BEGIN WORKFLOW INPUT DOCS: common -->
 
 ### 🔧 Inputs
 

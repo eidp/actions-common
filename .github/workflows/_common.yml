@@ -1,0 +1,13 @@
+name: common
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+
+jobs:
+  common:
+    uses: ./.github/workflows/common.yml
