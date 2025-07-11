@@ -12,7 +12,7 @@ from pathlib import Path
 import re
 from py_markdown_table.markdown_table import markdown_table
 
-ACTIONS_DIR = Path(".github/actions")
+ACTIONS_DIR = Path("./")
 DEFAULT_VERSION = "v0"
 
 def get_repo_info_from_git():
@@ -68,7 +68,7 @@ def parse_action_file(action_dir: Path, repo_ref: str):
     )
     usage = f"""```yaml
 - name: {name}
-  uses: {repo_ref}/.github/actions/{action_dir.name}@{DEFAULT_VERSION}
+  uses: {repo_ref}/{action_dir.name}@{DEFAULT_VERSION}
   with:
     # your inputs here
 ```"""
@@ -104,11 +104,6 @@ def find_action_dirs():
     if ACTIONS_DIR.exists():
         for d in ACTIONS_DIR.iterdir():
             if d.is_dir() and (d / "action.yml").exists() or (d / "action.yaml").exists():
-                action_dirs.append(d)
-    # Search root
-    for d in Path(".").iterdir():
-        if d.is_dir() and d.name not in [".github", "scripts", "workflows"]:
-            if (d / "action.yml").exists() or (d / "action.yaml").exists():
                 action_dirs.append(d)
     return action_dirs
 

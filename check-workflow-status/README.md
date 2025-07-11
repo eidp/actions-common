@@ -27,7 +27,7 @@ _None_
 
 ```yaml
 - name: Check Workflow Status
-  uses: eidp/actions-common/.github/actions/check-workflow-status@v0
+  uses: eidp/actions-common/check-workflow-status@v0
   with:
     # your inputs here
 ```

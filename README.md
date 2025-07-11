@@ -32,23 +32,3 @@ install the pre-commit hooks by running:
 ```bash
 pre-commit install
 ```
-
-<!-- BEGIN SHARED WORKFLOWS -->
-
-## 📚 Shared Workflows
-
-The following reusable workflows are available in this repository:
-
-- [common](./workflows/README.md#common-workflow)
-
-<!-- END SHARED WORKFLOWS -->
-
-<!-- BEGIN ACTIONS -->
-
-## 🛠️ GitHub Actions
-
-The following GitHub Actions are available in this repository:
-
-- [update-major-version-tag](update-major-version-tag/README.md)
-
-<!-- END ACTIONS -->

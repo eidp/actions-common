@@ -14,7 +14,7 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 ```
 
-This actions requires a GitHub token with the following permissions:
+This action requires a GitHub token with the following permissions:
 ```yaml
   permissions:
     contents: write
@@ -36,7 +36,7 @@ This actions requires a GitHub token with the following permissions:
 
 ```yaml
 - name: Update major version tag
-  uses: eidp/actions-common/.github/actions/update-major-version-tag@v0
+  uses: eidp/actions-common/update-major-version-tag@v0
   with:
     # your inputs here
 ```
