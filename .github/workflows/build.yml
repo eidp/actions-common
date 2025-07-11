@@ -123,6 +123,6 @@ jobs:
       id: check-workflow-status
       uses: ./check-workflow-status
       with:
-        jobs: 'test-update-major-version-tag,'
+        jobs: 'test-update-major-version-tag,test-check-workflow-status'
         github-token: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
