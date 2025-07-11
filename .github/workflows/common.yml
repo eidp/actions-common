@@ -1,7 +1,14 @@
 name: common
 
 on:
-  workflow_call: {}
+  workflow_call:
+    inputs:
+      bla:
+        description: >
+          This is a placeholder input to demonstrate the workflow call structure.
+        required: false
+        type: string
+        default: "default value"
 
 jobs:
   assign-pr-labels:
