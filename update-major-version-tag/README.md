@@ -1,5 +1,4 @@
-<!-- BEGIN ACTION DOCS: Update major version tag -->
-<!-- BEGIN ACTION DOCS: Update major version tag -->
+<!-- NOTE: This file's contents are automatically generated. Do not edit manually. -->
 # Update major version tag (Action)
 
 This action updates or creates a major version tag based on the latest semver tag pushed to the repository. If the major version tag already exists, it updates it to point to the latest commit; otherwise, it creates a new major version tag.
@@ -20,7 +19,6 @@ This actions requires the following permissions:
   permissions:
     contents: write
 ```
-<!-- BEGIN ACTION DOCS: Update major version tag -->
 
 ## 🔧 Inputs
 
@@ -42,5 +40,3 @@ This actions requires the following permissions:
   with:
     # your inputs here
 ```
-
-<!-- END ACTION DOCS -->

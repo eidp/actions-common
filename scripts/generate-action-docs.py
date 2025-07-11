@@ -13,8 +13,6 @@ import re
 from py_markdown_table.markdown_table import markdown_table
 
 ACTIONS_DIR = Path(".github/actions")
-MARKER_TEMPLATE = "<!-- BEGIN ACTION DOCS: {name} -->"
-MARKER_END = "<!-- END ACTION DOCS -->"
 DEFAULT_VERSION = "v0"
 
 def get_repo_info_from_git():
@@ -64,9 +62,10 @@ def parse_action_file(action_dir: Path, repo_ref: str):
     inputs_md = markdown_table(input_rows).set_params(row_sep="markdown", quote=False).get_markdown() if input_rows else "_None_"
     outputs_md = markdown_table(output_rows).set_params(row_sep="markdown", quote=False).get_markdown() if output_rows else "_None_"
 
-    header = f"# {name} (Action)\n\n{description}"
-    block_start = MARKER_TEMPLATE.format(name=name)
-
+    header = (
+        "<!-- NOTE: This file's contents are automatically generated. Do not edit manually. -->\n"
+        f"# {name} (Action)\n\n{description}"
+    )
     usage = f"""```yaml
 - name: {name}
   uses: {repo_ref}/.github/actions/{action_dir.name}@{DEFAULT_VERSION}
@@ -74,7 +73,6 @@ def parse_action_file(action_dir: Path, repo_ref: str):
     # your inputs here
 ```"""
     block = f"""{header}
-{block_start}
 
 ## 🔧 Inputs
 
@@ -87,8 +85,6 @@ def parse_action_file(action_dir: Path, repo_ref: str):
 ## 🚀 Usage
 
 {usage}
-
-{MARKER_END}
 """
     return name, block.strip()
 
@@ -98,28 +94,31 @@ def update_readme(readme_path: Path, name: str, block: str):
         print(f"✅ Created README.md with docs for {name}")
         return
 
-    content = readme_path.read_text()
-    pattern = re.compile(
-        rf"# {re.escape(name)} \(Action\).*?{re.escape(MARKER_END)}",
-        re.DOTALL,
-    )
-
-    if pattern.search(content):
-        content = pattern.sub(block, content)
-    else:
-        content = content.strip() + block + "\n"
+    content = block + "\n"
 
     readme_path.write_text(content)
-    print(f"✅ Updated: {readme_path} with action: {name}")
+    print(f"✅ Generated: {readme_path} with action: {name}")
+
+def find_action_dirs():
+    action_dirs = []
+    if ACTIONS_DIR.exists():
+        for d in ACTIONS_DIR.iterdir():
+            if d.is_dir() and (d / "action.yml").exists() or (d / "action.yaml").exists():
+                action_dirs.append(d)
+    # Search root
+    for d in Path(".").iterdir():
+        if d.is_dir() and d.name not in [".github", "scripts", "workflows"]:
+            if (d / "action.yml").exists() or (d / "action.yaml").exists():
+                action_dirs.append(d)
+    return action_dirs
 
 def main():
     repo_ref = get_repo_info_from_git()
-    for action_dir in ACTIONS_DIR.iterdir():
-        if action_dir.is_dir():
-            name, block = parse_action_file(action_dir, repo_ref)
-            if block:
-                readme = action_dir / "README.md"
-                update_readme(readme, name, block)
+    for action_dir in find_action_dirs():
+        name, block = parse_action_file(action_dir, repo_ref)
+        if block:
+            readme = Path(action_dir / "README.md")
+            update_readme(readme, name, block)
 
 if __name__ == "__main__":
     main()
