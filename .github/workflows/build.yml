@@ -60,3 +60,38 @@ jobs:
         MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
         git tag -d $MAJOR_TAG 2>/dev/null || true
         git push origin :refs/tags/$MAJOR_TAG 2>/dev/null || true
+
+  test-check-workflow-status:
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: check-workflow-status success
+      id: check-workflow-status-success
+      uses: ./check-workflow-status
+      with:
+        jobs: 'test-update-major-version-tag'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Assert Workflow Status
+      uses: nick-fields/assert-action@v1
+      with:
+        expected: success
+        actual: ${{ steps.check-workflow-status-success.outputs.status }}
+
+    - name: check-workflow-status failure
+      id: check-workflow_status-failure
+      uses: ./check-workflow-status
+      with:
+        jobs: 'test-update-major-version-tag,non-existent-job'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Assert Workflow Status
+      uses: nick-fields/assert-action@v1
+      with:
+        expected: failed
+        actual: ${{ steps.check-workflow-status-failure.outputs.status }}

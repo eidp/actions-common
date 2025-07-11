@@ -1,0 +1,43 @@
+name: Check Workflow Status
+description: >
+  Checks the status of specified jobs using the needs context.
+  This is useful for configuring required status checks in GitHub branch protection rules.
+  Using this action, you only need to configure a single job that checks the status of multiple jobs, rather than configuring each job individually in the branch protection rules.
+author: EIDP
+inputs:
+  jobs:
+    description: >
+      Comma-separated list of job names to check status for.
+    required: true
+    default: ''
+  github-token:
+    description: >
+      GitHub token to authenticate API requests.
+    required: true
+outputs:
+  status:
+    description: >
+      The status of the workflow, which will be "success" if all specified jobs passed, or "failure" if any job failed or was cancelled.
+    value: ${{ steps.check_status.outcome }}
+
+runs:
+  using: composite
+  steps:
+  - name: Check Workflow Status
+    shell: bash
+    run: |
+      jobs="${{ inputs.jobs }}"
+      IFS=',' read -ra JOB_LIST <<< "$jobs"
+        repo="${{ github.repository }}"
+        run_id="${{ github.run_id }}"
+        api_url="https://api.github.com/repos/$repo/actions/runs/$run_id/jobs"
+        response=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
+      echo "$response"
+      for job in "${JOB_LIST[@]}"; do
+          job=$(echo "$job" | xargs)
+          result=$(echo "$response" | jq -r ".jobs[] | select(.name==\"$job\") | .conclusion")
+        if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+          echo "Job '$job' failed or was cancelled."
+          exit 1
+        fi
+        done
