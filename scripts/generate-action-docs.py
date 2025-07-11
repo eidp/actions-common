@@ -103,7 +103,7 @@ def find_action_dirs():
     action_dirs = []
     if ACTIONS_DIR.exists():
         for d in ACTIONS_DIR.iterdir():
-            if d.is_dir() and (d / "action.yml").exists() or (d / "action.yaml").exists():
+            if d.is_dir() and ((d / "action.yml").exists() or (d / "action.yaml").exists()):
                 action_dirs.append(d)
     return action_dirs
 
