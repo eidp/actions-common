@@ -118,11 +118,15 @@ jobs:
 
   check-workflow-status:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
     - name: Check Workflow Status
       id: check-workflow-status
       uses: ./check-workflow-status
       with:
         jobs: 'test-update-major-version-tag,test-check-workflow-status'
         github-token: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
