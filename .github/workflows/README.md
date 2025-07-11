@@ -13,11 +13,13 @@ permissions:
   pull-requests: write
 ```
 
-<!-- BEGIN WORKFLOW INPUT DOCS: Common workflow -->
+<!-- BEGIN WORKFLOW INPUT DOCS: common -->
 
 ### 🔧 Inputs
 
-_None_
+|Name  |Description                                                             |Required|Type   |Default         |
+|------|------------------------------------------------------------------------|--------|-------|----------------|
+|`bla` |This is a placeholder input to demonstrate the workflow call structure. |No      |string |`default value` |
 
 ### 🔐 Secrets
 

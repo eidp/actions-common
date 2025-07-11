@@ -13,7 +13,7 @@ description: |
       - 'v[0-9]+.[0-9]+.[0-9]+'
   ```
 
-  This actions requires the following permissions:
+  This action requires a GitHub token with the following permissions:
   ```yaml
     permissions:
       contents: write

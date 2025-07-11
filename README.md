@@ -2,21 +2,23 @@
 
 This repository contains common GitHub Actions and shared workflows.
 
-## Actions
+<!-- BEGIN ACTIONS -->
 
-This repository exposes reusable GitHub Actions for common tasks.
+## 🛠️ GitHub Actions
 
-<!-- BEGIN AUTO-ACTIONS -->
+The following GitHub Actions are available in this repository:
 
-- [update-major-version-tag](.github/actions/update-major-version-tag/README.md)
+- [update-major-version-tag](update-major-version-tag/README.md)
 
-<!-- END AUTO-ACTIONS -->
+<!-- END ACTIONS -->
+
+<!-- BEGIN SHARED WORKFLOWS -->
 
 ## 📚 Shared Workflows
 
 The following reusable workflows are available in this repository:
 
-- [Common workflow](./github/workflows/README.md#common-workflow-workflow)
+- [common](./workflows/README.md#common-workflow)
 
 <!-- END SHARED WORKFLOWS -->
 
@@ -30,13 +32,3 @@ install the pre-commit hooks by running:
 ```bash
 pre-commit install
 ```
-
-<!-- BEGIN SHARED WORKFLOWS -->
-
-## 📚 Shared Workflows
-
-The following reusable workflows are available in this repository:
-
-- [Common workflow](./github/workflows/README.md#common-workflow-workflow)
-
-<!-- END SHARED WORKFLOWS -->

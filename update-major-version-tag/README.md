@@ -1,5 +1,4 @@
-<!-- BEGIN ACTION DOCS: Update major version tag -->
-<!-- BEGIN ACTION DOCS: Update major version tag -->
+<!-- NOTE: This file's contents are automatically generated. Do not edit manually. -->
 # Update major version tag (Action)
 
 This action updates or creates a major version tag based on the latest semver tag pushed to the repository. If the major version tag already exists, it updates it to point to the latest commit; otherwise, it creates a new major version tag.
@@ -15,12 +14,11 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 ```
 
-This actions requires the following permissions:
+This action requires a GitHub token with the following permissions:
 ```yaml
   permissions:
     contents: write
 ```
-<!-- BEGIN ACTION DOCS: Update major version tag -->
 
 ## 🔧 Inputs
 
@@ -38,9 +36,7 @@ This actions requires the following permissions:
 
 ```yaml
 - name: Update major version tag
-  uses: eidp/actions-common/.github/actions/update-major-version-tag@v0
+  uses: eidp/actions-common/update-major-version-tag@v0
   with:
     # your inputs here
 ```
-
-<!-- END ACTION DOCS -->

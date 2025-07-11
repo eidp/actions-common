@@ -5,43 +5,46 @@
 from pathlib import Path
 import re
 
-ACTIONS_DIR = Path(".github/actions")
+ACTIONS_HEADER = "## 🛠️ GitHub Actions"
+ACTIONS_MARKER_START = "<!-- BEGIN ACTIONS -->"
+ACTIONS_MARKER_END = "<!-- END ACTIONS -->"
 README_PATH = Path("README.md")
-MARKER_START = "<!-- BEGIN AUTO-ACTIONS -->"
-MARKER_END = "<!-- END AUTO-ACTIONS -->"
 
-def collect_action_readmes():
-    links = []
-    for readme in ACTIONS_DIR.glob("*/README.md"):
-        action_name = readme.parent.name
-        relative_path = readme.as_posix()
-        links.append(f"- [{action_name}]({relative_path})")
-    return "\n".join(links)
+def generate_action_list() -> str:
+    items = []
+    for action_file in Path(".").rglob("action.y*ml"):
+        action_dir = action_file.parent
+        readme = action_dir / "README.md"
+        if readme.exists():
+            action_name = action_dir.name
+            relative_path = readme.as_posix()
+            items.append(f"- [{action_name}]({relative_path})")
+    if not items:
+        return ""
+    content = f"{ACTIONS_HEADER}\n\n"
+    content += "The following GitHub Actions are available in this repository:\n\n"
+    content += "\n".join(items)
+    return f"{ACTIONS_MARKER_START}\n\n{content}\n\n{ACTIONS_MARKER_END}"
 
 def update_readme(content_block):
     if not README_PATH.exists():
         print("❌ README.md does not exist.")
         return
-
     content = README_PATH.read_text()
-
     marker_pattern = re.compile(
-        rf"{re.escape(MARKER_START)}.*?{re.escape(MARKER_END)}",
+        rf"{re.escape(ACTIONS_MARKER_START)}.*?{re.escape(ACTIONS_MARKER_END)}",
         re.DOTALL,
     )
-
-    new_block = f"{MARKER_START}\n\n{content_block}\n\n{MARKER_END}"
-
+    new_block = content_block
     if marker_pattern.search(content):
         updated = marker_pattern.sub(new_block, content)
     else:
         updated = content.strip() + "\n\n" + new_block + "\n"
-
     README_PATH.write_text(updated)
     print("✅ Updated README.md with action links.")
 
 def main():
-    content_block = collect_action_readmes()
+    content_block = generate_action_list()
     update_readme(content_block)
 
 if __name__ == "__main__":

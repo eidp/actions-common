@@ -1,4 +1,4 @@
-name: 'Common PR workflow'
+name: common
 
 on:
   pull_request:
