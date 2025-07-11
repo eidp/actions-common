@@ -1,4 +1,4 @@
-name: Test update-major-version-tag
+name: build
 
 on:
   push:
