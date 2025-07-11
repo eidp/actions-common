@@ -5,7 +5,7 @@ repos:
     name: Update Action list
     entry: uv run ./scripts/generate-action-list.py
     language: system
-    files: '^\.github/actions/.*/action\.ya?ml$'
+    files: '^.*/action\.ya?ml$'
     pass_filenames: false
   - id: generate-action-docs
     name: Update Action docs
