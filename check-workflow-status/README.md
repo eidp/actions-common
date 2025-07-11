@@ -5,7 +5,7 @@ Checks the status of specified jobs using the needs context.
 This is useful for configuring required status checks in GitHub branch protection rules.
 Using this action, you only need to configure a single job that checks the status of multiple jobs, rather than configuring each job individually in the branch protection rules.
 
-This actions requires a GitHub token with the following permissions:
+This action requires a GitHub token with the following permissions:
 ```yaml
   permissions:
     contents: read
