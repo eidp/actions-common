@@ -14,7 +14,7 @@ on:
     - 'v[0-9]+.[0-9]+.[0-9]+'
 ```
 
-This actions requires the following permissions:
+This actions requires a GitHub token with the following permissions:
 ```yaml
   permissions:
     contents: write

@@ -11,13 +11,13 @@ repos:
     name: Update Action docs
     entry: uv run ./scripts/generate-action-docs.py
     language: system
-    files: '^\.github/actions/.*/action\.ya?ml$'
+    files: '^.*/action\.ya?ml$'
     pass_filenames: false
   - id: generate-workflow-docs
     name: Update shared workflow docs
     entry: uv run scripts/generate-workflow-docs.py
     language: system
-    files: '^\.github/workflows/.*\.ya?ml$'
+    files: '^\/workflows/.*\.ya?ml$'
     pass_filenames: false
   - id: generate-workflow-list
     name: Update shared workflow list

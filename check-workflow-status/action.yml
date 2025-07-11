@@ -1,8 +1,16 @@
 name: Check Workflow Status
-description: >
+description: |
   Checks the status of specified jobs using the needs context.
   This is useful for configuring required status checks in GitHub branch protection rules.
   Using this action, you only need to configure a single job that checks the status of multiple jobs, rather than configuring each job individually in the branch protection rules.
+
+  This actions requires a GitHub token with the following permissions:
+  ```yaml
+    permissions:
+      contents: read
+      actions: read
+  ```
+
 author: EIDP
 inputs:
   jobs:
@@ -14,30 +22,39 @@ inputs:
     description: >
       GitHub token to authenticate API requests.
     required: true
-outputs:
-  status:
-    description: >
-      The status of the workflow, which will be "success" if all specified jobs passed, or "failure" if any job failed or was cancelled.
-    value: ${{ steps.check_status.outcome }}
 
 runs:
   using: composite
   steps:
   - name: Check Workflow Status
+    id: check_status
     shell: bash
     run: |
       jobs="${{ inputs.jobs }}"
       IFS=',' read -ra JOB_LIST <<< "$jobs"
-        repo="${{ github.repository }}"
-        run_id="${{ github.run_id }}"
-        api_url="https://api.github.com/repos/$repo/actions/runs/$run_id/jobs"
-        response=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
-      echo "$response"
+      repo="${{ github.repository }}"
+      run_id="${{ github.run_id }}"
+      api_url="https://api.github.com/repos/$repo/actions/runs/$run_id/jobs"
+      response=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
       for job in "${JOB_LIST[@]}"; do
-          job=$(echo "$job" | xargs)
-          result=$(echo "$response" | jq -r ".jobs[] | select(.name==\"$job\") | .conclusion")
-        if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
-          echo "Job '$job' failed or was cancelled."
+        job=$(echo "$job" | xargs)
+        job_found=$(echo "$response" | jq -r ".jobs[] | select(.name==\"$job\") | .name")
+        if [[ -z "$job_found" ]]; then
+          echo "Job '$job' does not exist."
           exit 1
         fi
+        while true; do
+          result=$(echo "$response" | jq -r ".jobs[] | select(.name==\"$job\") | .conclusion")
+          if [[ "$result" == "null" ]]; then
+            echo "Job '$job' is still in progress. Waiting..."
+            sleep 10
+            response=$(curl -s -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
+          else
+            if [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
+              echo "Job '$job' failed or was cancelled."
+              exit 1
+            fi
+            break
+          fi
         done
+      done

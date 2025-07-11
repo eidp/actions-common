@@ -64,6 +64,7 @@ jobs:
   test-check-workflow-status:
     runs-on: ubuntu-latest
     permissions:
+      contents: read
       actions: read
     steps:
     - name: Checkout code
@@ -80,10 +81,10 @@ jobs:
       uses: nick-fields/assert-action@v1
       with:
         expected: success
-        actual: ${{ steps.check-workflow-status-success.outputs.status }}
+        actual: ${{ steps.check-workflow-status-success.outcome }}
 
-    - name: check-workflow-status failure
-      id: check-workflow_status-failure
+    - name: check-workflow-status non-existent-job
+      id: check-workflow-status-non-existent-job
       uses: ./check-workflow-status
       with:
         jobs: 'test-update-major-version-tag,non-existent-job'
@@ -93,5 +94,35 @@ jobs:
     - name: Assert Workflow Status
       uses: nick-fields/assert-action@v1
       with:
-        expected: failed
-        actual: ${{ steps.check-workflow-status-failure.outputs.status }}
+        expected: failure
+        actual: ${{ steps.check-workflow-status-non-existent-job.outcome }}
+
+    - name: failing-job
+      id: failing-job
+      continue-on-error: true
+      run: exit 1
+
+    - name: check-workflow-status failed
+      id: check-workflow-status-failed
+      uses: ./check-workflow-status
+      with:
+        jobs: 'test-update-major-version-tag,failing-job'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
+
+    - name: Assert Workflow Status
+      uses: nick-fields/assert-action@v1
+      with:
+        expected: failure
+        actual: ${{ steps.check-workflow-status-failed.outcome }}
+
+  check-workflow-status:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Check Workflow Status
+      id: check-workflow-status
+      uses: ./check-workflow-status
+      with:
+        jobs: 'test-update-major-version-tag,'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
