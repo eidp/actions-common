@@ -43,6 +43,7 @@ runs:
         echo "No jobs found in API response. Check permissions, token, and run ID."
         exit 1
       fi
+      echo "Jobs found: $(echo "$response_body" | jq -r '.jobs[].name' | paste -sd "," -)"
       for job in "${JOB_LIST[@]}"; do
         job=$(echo "$job" | xargs)
         job_found=$(echo "$response_body" | jq -r ".jobs[] | select(.name==\"$job\") | .name")
