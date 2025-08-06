@@ -2,6 +2,8 @@ name: tool-cache
 
 on:
   push:
+    paths:
+      - .github/workflows/tool-cache.yml
   schedule:
   - cron: "0 0 * * *" # Every Sunday at midnight UTC
 
