@@ -23,6 +23,12 @@ The following reusable workflows are available in this repository:
 
 <!-- END SHARED WORKFLOWS -->
 
+## GitHub self-hosted actions runner tool cache
+
+This repository contains a workflow that sets up a self-hosted GitHub Actions runner tool cache and publishes it to an S3 bucket.
+The tool cache is used to speed up the execution of GitHub Actions by caching tools and dependencies that are commonly used in workflows.
+The workflow is located in the `.github/workflows/tool-cache.yml` file.
+
 ## Development
 
 ### Pre-commit hooks

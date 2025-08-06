@@ -1,0 +1,58 @@
+name: tool-cache
+
+on:
+  push:
+  schedule:
+  - cron: "0 0 * * *" # Every Sunday at midnight UTC
+
+jobs:
+  tool-cache:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Clear any existing tool cache
+      run: |
+        mv "${{ runner.tool_cache }}" "${{ runner.tool_cache }}.old"
+        mkdir -p "${{ runner.tool_cache }}"
+    - name: Setup Node.js 20.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: "20.x"
+    - name: Setup Node.js 22.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: "22.x"
+    - name: Setup Node.js 24.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: "24.x"
+    - name: Setup Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+    - name: Setup Python 3.11
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Setup Python 3.12
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Setup Python 3.13
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.13"
+    - name: Archive tool cache
+      run: |
+        cd "${{ runner.tool_cache }}"
+        tar -czf tool_cache.tar.gz *
+    - name: Install AWS CLI
+      run: |
+        pip install awscli
+    - name: Publish tool cache to S3
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_ENDPOINT_URL: https://core.fuga.cloud:8080
+        AWS_REGION: eu-west-1 # Fake region for non-aws S3 endpoint
+      run: |
+        aws s3 cp ${{ runner.tool_cache }}/tool_cache.tar.gz s3://public-data/gha-runner-tool-cache/tool_cache.tar.gz
