@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   update-major-version-tag:
-    runs-on: ubuntu-latest
+    runs-on: kubernetes-runner
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
