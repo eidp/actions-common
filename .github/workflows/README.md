@@ -17,9 +17,9 @@ permissions:
 
 ### 🔧 Inputs
 
-|Name  |Description                                                             |Required|Type   |Default         |
-|------|------------------------------------------------------------------------|--------|-------|----------------|
-|`bla` |This is a placeholder input to demonstrate the workflow call structure. |No      |string |`default value` |
+|Name      |Description                                                                                                            |Required|Type   |Default         |
+|----------|-----------------------------------------------------------------------------------------------------------------------|--------|-------|----------------|
+|`runs-on` |The type of runner to use for the workflow. Defaults to 'ubuntu-latest'. You can specify a different runner if needed. |No      |string |`ubuntu-latest` |
 
 ### 🔐 Secrets
 

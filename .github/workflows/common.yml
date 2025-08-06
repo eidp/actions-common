@@ -3,16 +3,17 @@ name: common
 on:
   workflow_call:
     inputs:
-      bla:
+      runs-on:
         description: >
-          This is a placeholder input to demonstrate the workflow call structure.
+          The type of runner to use for the workflow. Defaults to 'ubuntu-latest'.
+          You can specify a different runner if needed.
         required: false
         type: string
-        default: "default value"
+        default: "ubuntu-latest"
 
 jobs:
   assign-pr-labels:
-    runs-on: ubuntu-latest
+    runs-on: ${{ inputs.runs-on }}
     steps:
     - name: Assign PR Labels
       id: assign-labels
