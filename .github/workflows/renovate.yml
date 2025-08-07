@@ -78,7 +78,7 @@ jobs:
         path: ./renovate-config
 
     - name: Renovate
-      uses: renovatebot/github-action@v43.0.5
+      uses: renovatebot/github-action@e3c9b63dabe11d616d9a5e9c19064ec6560369c0 # v43.0.6
       env:
         GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
       with:
