@@ -19,7 +19,8 @@ The following GitHub Actions are available in this repository:
 
 The following reusable workflows are available in this repository:
 
-- [common](./workflows/README.md#common-workflow)
+- [common](./.github/workflows/README.md#common-workflow)
+- [renovate](./.github/workflows/README.md#renovate-workflow)
 
 <!-- END SHARED WORKFLOWS -->
 
