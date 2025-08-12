@@ -86,3 +86,4 @@ jobs:
         renovate-image: ${{ inputs.renovate-image }}
         renovate-version: ${{ inputs.renovate-version }}
         token: '${{ steps.get_token.outputs.token }}'
+        env-regex: "^(?:RENOVATE_\\w+|GITHUB_TOKEN)$"
