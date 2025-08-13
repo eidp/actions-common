@@ -81,7 +81,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
         RENOVATE_LOG_LEVEL: ${{ vars.RENOVATE_LOG_LEVEL || 'INFO' }}
-        RENOVATE_REPOSITORIES: ${{ github.event.repository.name }},${{ inputs.renovate-config-repo }}
+        RENOVATE_REPOSITORIES: "eidp/${{ github.event.repository.name }}"
       with:
         configurationFile: ./renovate-config/${{ inputs.renovate-config-file-path }}
         renovate-image: ${{ inputs.renovate-image }}
