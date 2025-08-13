@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
     - name: Create test tag
       id: create_tag
@@ -34,7 +34,7 @@ jobs:
         tag: ${{ steps.create_tag.outputs.tag }}
 
     - name: Assert Version Output
-      uses: nick-fields/assert-action@v1
+      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
       with:
         expected: ${{ steps.create_tag.outputs.major_tag }}
         actual: ${{ steps.update_major_version_tag.outputs.major_tag }}
@@ -68,7 +68,7 @@ jobs:
       actions: read
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
     - name: check-workflow-status success
       id: check-workflow-status-success
@@ -78,7 +78,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@v1
+      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
       with:
         expected: success
         actual: ${{ steps.check-workflow-status-success.outcome }}
@@ -92,7 +92,7 @@ jobs:
       continue-on-error: true
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@v1
+      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
       with:
         expected: failure
         actual: ${{ steps.check-workflow-status-non-existent-job.outcome }}
@@ -111,7 +111,7 @@ jobs:
       continue-on-error: true
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@v1
+      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
       with:
         expected: failure
         actual: ${{ steps.check-workflow-status-failed.outcome }}
@@ -123,7 +123,7 @@ jobs:
       actions: read
     steps:
     - name: Checkout Code
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
     - name: Check Workflow Status
       id: check-workflow-status
       uses: ./check-workflow-status

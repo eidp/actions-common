@@ -36,7 +36,7 @@ runs:
   steps:
   - name: Update major version tag
     id: update-major-version-tag
-    uses: actions/github-script@v7
+    uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7
     with:
       script: |
         const providedTag = '${{ inputs.tag }}';
