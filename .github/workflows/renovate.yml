@@ -81,10 +81,9 @@ jobs:
       uses: renovatebot/github-action@e3c9b63dabe11d616d9a5e9c19064ec6560369c0 # v43.0.6
       env:
         GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
-        RENOVATE_LOG_LEVEL: DEBUG
       with:
         configurationFile: ./renovate-config/${{ inputs.renovate-config-file-path }}
         renovate-image: ${{ inputs.renovate-image }}
         renovate-version: ${{ inputs.renovate-version }}
         token: '${{ steps.get_token.outputs.token }}'
-        env-regex: "^(?:RENOVATE_\\w+|GITHUB_TOKEN|HARBOR_\\w+)$"
+        env-regex: "^(?:RENOVATE_\\w+|GITHUB_TOKEN|HARBOR_\\w+|LOG_LEVEL)$"
