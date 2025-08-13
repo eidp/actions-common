@@ -66,10 +66,10 @@ jobs:
         owner: ${{ github.repository_owner }}
 
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
 
     - name: Checkout Renovate Config Repo
-      uses: actions/checkout@v4
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
       with:
         repository: ${{ github.repository_owner }}/${{ inputs.renovate-config-repo }}
         ref: ${{ inputs.renovate-config-repo-ref }}
