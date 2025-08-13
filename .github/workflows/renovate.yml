@@ -64,7 +64,6 @@ jobs:
         private-key: ${{ secrets.GITHUB_APP_PEM_FILE }}
         app-id: ${{ secrets.GITHUB_APP_ID }}
         owner: ${{ github.repository_owner }}
-        repositories: ${{ github.event.repository.name }}, ${{ inputs.renovate-config-repo }}
 
     - name: Checkout
       uses: actions/checkout@v4
