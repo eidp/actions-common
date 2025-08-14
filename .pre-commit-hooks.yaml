@@ -1,0 +1,12 @@
+- id: generate-workflow-docs
+  name: generate-workflow-docs
+  description: Generates documentation for GitHub workflows.
+  entry: generate-workflow-docs
+  language: python
+  types: [text]
+- id: generate-action-docs
+  name: generate-action-docs
+  description: Generates documentation for GitHub actions.
+  entry: generate-action-docs
+  language: python
+  types: [text]

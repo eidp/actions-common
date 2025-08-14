@@ -107,7 +107,7 @@ def find_action_dirs():
                 action_dirs.append(d)
     return action_dirs
 
-def main():
+def generate_action_docs():
     repo_ref = get_repo_info_from_git()
     for action_dir in find_action_dirs():
         name, block = parse_action_file(action_dir, repo_ref)
@@ -116,4 +116,4 @@ def main():
             update_readme(readme, name, block)
 
 if __name__ == "__main__":
-    main()
+    generate_action_docs()

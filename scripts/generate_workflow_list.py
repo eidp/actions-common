@@ -64,7 +64,7 @@ def update_readme(path: Path, new_list: str):
     path.write_text(content)
     print(f"✅ Updated: {path} with shared workflow list.")
 
-def main():
+def generate_workflow_list():
     new_list = generate_shared_workflow_list()
     if new_list:
         update_readme(README_PATH, new_list)
@@ -72,4 +72,4 @@ def main():
         print("⚠️ No shared workflows found.")
 
 if __name__ == "__main__":
-    main()
+    generate_workflow_list()

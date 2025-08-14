@@ -3,25 +3,25 @@ repos:
   hooks:
   - id: generate-action-list
     name: Update Action list
-    entry: uv run ./scripts/generate-action-list.py
+    entry: uv run ./scripts/generate_action_list.py
     language: system
     files: '^.*/action\.ya?ml$'
     pass_filenames: false
   - id: generate-action-docs
     name: Update Action docs
-    entry: uv run ./scripts/generate-action-docs.py
+    entry: uv run ./scripts/generate_action_docs.py
     language: system
     files: '^.*/action\.ya?ml$'
     pass_filenames: false
   - id: generate-workflow-docs
     name: Update shared workflow docs
-    entry: uv run scripts/generate-workflow-docs.py
+    entry: uv run scripts/generate_workflow_docs.py
     language: system
     files: '^\.github/workflows/.*\.ya?ml$'
     pass_filenames: false
   - id: generate-workflow-list
     name: Update shared workflow list
-    entry: uv run scripts/generate-workflow-list.py
+    entry: uv run scripts/generate_workflow_list.py
     language: system
     files: '^\.github/workflows/.*\.ya?ml$'
     pass_filenames: false
