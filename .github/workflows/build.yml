@@ -34,7 +34,7 @@ jobs:
         tag: ${{ steps.create_tag.outputs.tag }}
 
     - name: Assert Version Output
-      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
       with:
         expected: ${{ steps.create_tag.outputs.major_tag }}
         actual: ${{ steps.update_major_version_tag.outputs.major_tag }}
@@ -78,7 +78,7 @@ jobs:
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
       with:
         expected: success
         actual: ${{ steps.check-workflow-status-success.outcome }}
@@ -92,7 +92,7 @@ jobs:
       continue-on-error: true
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
       with:
         expected: failure
         actual: ${{ steps.check-workflow-status-non-existent-job.outcome }}
@@ -111,7 +111,7 @@ jobs:
       continue-on-error: true
 
     - name: Assert Workflow Status
-      uses: nick-fields/assert-action@1e012cc9f1bf73ccc96470b56c8887478c647e8a # v1
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
       with:
         expected: failure
         actual: ${{ steps.check-workflow-status-failed.outcome }}
