@@ -10,7 +10,7 @@ ACTIONS_MARKER_START = "<!-- BEGIN ACTIONS -->"
 ACTIONS_MARKER_END = "<!-- END ACTIONS -->"
 README_PATH = Path("README.md")
 
-def generate_action_list() -> str:
+def _generate_action_list() -> str:
     items = []
     for action_file in Path(".").rglob("action.y*ml"):
         action_dir = action_file.parent
@@ -43,9 +43,9 @@ def update_readme(content_block):
     README_PATH.write_text(updated)
     print("✅ Updated README.md with action links.")
 
-def main():
-    content_block = generate_action_list()
+def generate_action_list():
+    content_block = _generate_action_list()
     update_readme(content_block)
 
 if __name__ == "__main__":
-    main()
+    generate_action_list()

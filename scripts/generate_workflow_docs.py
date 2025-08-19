@@ -105,7 +105,7 @@ def update_readme(readme_path: Path, name: str, block: str):
   readme_path.write_text(content)
 
 
-def main():
+def generate_workflow_docs():
   for file in WORKFLOWS_DIR.glob("*.yml"):
     name, block = parse_workflow_file(file)
     if block:
@@ -114,4 +114,4 @@ def main():
 
 
 if __name__ == "__main__":
-  main()
+  generate_workflow_docs()
