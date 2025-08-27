@@ -145,5 +145,3 @@ jobs:
       with:
         jobs: 'test-update-major-version-tag,test-check-workflow-status'
         github-token: ${{ secrets.GITHUB_TOKEN }}
-
-      
