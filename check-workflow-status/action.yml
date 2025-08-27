@@ -9,8 +9,8 @@ description: |
     permissions:
       contents: read
       actions: read
+      pull-requests: read # Only needed if you use the `required-files-changed` input
   ```
-
 author: EIDP
 inputs:
   jobs:
