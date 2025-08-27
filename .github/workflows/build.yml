@@ -116,6 +116,20 @@ jobs:
         expected: failure
         actual: ${{ steps.check-workflow-status-failed.outcome }}
 
+    - name: check-workflow-status succeeds when no required files are present
+      id: check-workflow-status-required-files
+      uses: ./check-workflow-status
+      with:
+        jobs: 'failing-job'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        requires-files-changed: this/does/not.exist,neither/**/does.this
+
+    - name: Assert Workflow Status
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
+      with:
+        expected: success
+        actual: ${{ steps.check-workflow-status-required-files.outcome }}
+
   check-workflow-status:
     runs-on: ubuntu-latest
     permissions:
@@ -130,3 +144,5 @@ jobs:
       with:
         jobs: 'test-update-major-version-tag,test-check-workflow-status'
         github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      
