@@ -9,7 +9,7 @@ on:
 
 jobs:
   tool-cache:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - name: Clear any existing tool cache
       run: |
