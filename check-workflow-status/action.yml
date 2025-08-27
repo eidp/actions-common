@@ -48,7 +48,7 @@ runs:
         files_response_body="${files_response:0:${#files_response}-3}"
         
         if [[ "$files_http_status" != "200" ]]; then
-          echo "Failed to fetch PR files. HTTP status: $files_http_status"
+          echo "Failed to fetch PR files. HTTP status: $files_http_status URL: $api_url"
         fi
         
         if [[ "$(echo "$files_response_body" | jq -r 'type')" != "array" ]]; then
@@ -90,7 +90,7 @@ runs:
       jobs_http_status="${jobs_response: -3}"
       jobs_response_body="${jobs_response:0:${#jobs_response}-3}"
       if [[ "$jobs_http_status" != "200" ]]; then
-        echo "Failed to fetch workflow jobs. HTTP status: $jobs_http_status"
+        echo "Failed to fetch workflow jobs. HTTP status: $jobs_http_status URL: $api_url"
         echo "Response: $jobs_response_body"
         exit 1
       fi
