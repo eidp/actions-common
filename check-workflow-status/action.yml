@@ -31,118 +31,15 @@ inputs:
 runs:
   using: composite
   steps:
-  - name: Check Workflow Status
-    id: check_status
-    shell: bash
-    run: |
-      requires_files_changed="${{ inputs.requires-files-changed }}"
-      if [[ -n "$requires_files_changed" && "${{ github.event_name }}" == "pull_request" ]]; then
-        echo "Checking if PR has changed files matching patterns: $requires_files_changed"
-        
-        pr_number="${{ github.event.number }}"
-        repo="${{ github.repository }}"
-        api_url="https://api.github.com/repos/$repo/pulls/$pr_number/files"
-        
-        files_response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
-        files_http_status="${files_response: -3}"
-        files_response_body="${files_response:0:${#files_response}-3}"
-        
-        if [[ "$files_http_status" != "200" ]]; then
-          echo "Failed to fetch PR files. HTTP status: $files_http_status URL: $api_url"
-        fi
-        
-        if [[ "$(echo "$files_response_body" | jq -r 'type')" != "array" ]]; then
-          echo "No changed files found in API response. Check permissions, token, and run ID."
-          exit 1
-        fi
-        
-        changed_files=$(echo "$files_response_body" | jq -r '.[].filename')
-        
-        IFS=',' read -ra PATTERN_LIST <<< "$requires_files_changed"
-        
-        # Check if any changed file matches any pattern
-        match_found=false
-        for pattern in "${PATTERN_LIST[@]}"; do
-          pattern=$(echo "$pattern" | xargs)  # trim whitespace
-          for file in $changed_files; do
-            if [[ "$file" == $pattern || "$file" == *"$pattern"* ]]; then
-              echo "File '$file' matches pattern '$pattern'"
-              match_found=true
-              break 2
-            fi
-          done
-        done
-        
-        if [[ "$match_found" != true ]]; then
-          echo "No changed files match the required patterns. Exiting successfully."
-          exit 0
-        fi
-        
-        echo "Found matching files. Proceeding with workflow status check."
-      fi
+    - name: Set up Python
+      uses: actions/setup-python@v4
       
-      jobs="${{ inputs.jobs }}"
-      IFS=',' read -ra JOB_LIST <<< "$jobs"
-      repo="${{ github.repository }}"
-      run_id="${{ github.run_id }}"
-      api_url="https://api.github.com/repos/$repo/actions/runs/$run_id/jobs"
-      jobs_response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
-      jobs_http_status="${jobs_response: -3}"
-      jobs_response_body="${jobs_response:0:${#jobs_response}-3}"
-      if [[ "$jobs_http_status" != "200" ]]; then
-        echo "Failed to fetch workflow jobs. HTTP status: $jobs_http_status URL: $api_url"
-        echo "Response: $jobs_response_body"
-        exit 1
-      fi
-      if [[ "$(echo "$jobs_response_body" | jq -r '.jobs')" == "null" ]]; then
-        echo "No jobs found in API response. Check permissions, token, and run ID."
-        exit 1
-      fi
-      for job in "${JOB_LIST[@]}"; do
-        job=$(echo "$job" | xargs)
-        job_found=""
-        max_attempts=10
-        attempt=1
-        while [[ -z "$job_found" && $attempt -le $max_attempts ]]; do
-        job_found=$(echo "$jobs_response_body" | jq -r ".jobs[] | select(.name==\"$job\") | .name")
-        if [[ -z "$job_found" ]]; then
-            echo "Job '$job' not found. Attempt $attempt/$max_attempts. Waiting..."
-            sleep 2
-            response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
-            http_status="${response: -3}"
-            response_body="${response:0:${#response}-3}"
-            if [[ "$http_status" != "200" ]]; then
-              echo "Failed to fetch workflow jobs during retry. HTTP status: $http_status"
-              echo "Response: $response_body"
-              exit 1
-            fi
-            ((attempt++))
-          fi
-        done
-        if [[ -z "$job_found" ]]; then
-          echo "Jobs found: $(echo "$response_body" | jq -r '.jobs[].name' | paste -sd "," -)"
-          echo "Job '$job' does not exist after $max_attempts attempts."
-          exit 1
-        fi
-        while true; do
-          result=$(echo "$response_body" | jq -r ".jobs[] | select(.name==\"$job\") | .conclusion")
-          if [[ "$result" == "null" ]]; then
-            echo "Job '$job' is still in progress. Waiting..."
-            sleep 1
-            response=$(curl -s -w "%{http_code}" -H "Authorization: Bearer ${{ inputs.github-token }}" "$api_url")
-            http_status="${response: -3}"
-            response_body="${response:0:${#response}-3}"
-            if [[ "$http_status" != "200" ]]; then
-              echo "HTTP response status: $http_status"
-            fi
-          else
-            if [[ "$result" == "success" ]]; then
-              echo "Job '$job' completed successfully."
-            elif [[ "$result" == "failure" || "$result" == "cancelled" ]]; then
-              echo "Job '$job' failed or was cancelled."
-              exit 1
-            fi
-            break
-          fi
-        done
-      done
+    - name: Check Workflow Status
+      id: check_status
+      shell: bash
+      run: |
+        python3 "${{ github.action_path }}/check_status.py"
+      env:
+        INPUT_JOBS: ${{ inputs.jobs }}
+        INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_REQUIRES_FILES_CHANGED: ${{ inputs.requires-files-changed }}
