@@ -33,7 +33,9 @@ runs:
   steps:
     - name: Set up Python
       uses: actions/setup-python@v4
-      
+      with:
+        python-version: '3.13.7'
+        
     - name: Check Workflow Status
       id: check_status
       shell: bash
