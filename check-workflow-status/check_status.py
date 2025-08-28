@@ -5,37 +5,32 @@ import urllib.request
 import json
 import fnmatch
 
+
 def get_env(name, required=True, default=None):
     value = os.environ.get(name, default)
     if required and value is None:
-        print(f"Missing required environment variable: {name}", file=sys.stderr)
-        sys.exit(1)
+        raise ValueError(f"Missing required environment variable: {name}")
     return value
 
 def fetch_json(url, token):
     req = urllib.request.Request(url)
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("Accept", "application/vnd.github+json")
-    try:
-        with urllib.request.urlopen(req) as resp:
-            if resp.status != 200:
-                print(f"Failed to fetch {url} (HTTP {resp.status})", file=sys.stderr)
-                print(f"Response: {resp.read().decode()}", file=sys.stderr)
-                sys.exit(1)
-            return json.load(resp)
-    except Exception as e:
-        print(f"Error fetching {url}: {e}", file=sys.stderr)
-        sys.exit(1)
+    with urllib.request.urlopen(req) as resp:
+        if resp.status != 200:
+            raise RuntimeError(f"Failed to fetch {url} (HTTP {resp.status})\nResponse: {resp.read().decode()}")
+        return json.load(resp)
 
-def main():
-    jobs = [j.strip() for j in get_env("INPUT_JOBS").split(",") if j.strip()]
-    github_token = get_env("INPUT_GITHUB_TOKEN")
-    requires_files_changed = get_env("INPUT_REQUIRES_FILES_CHANGED", required=False, default="")
-    event_name = get_env("GITHUB_EVENT_NAME")
-    repo = get_env("GITHUB_REPOSITORY")
-    run_id = get_env("GITHUB_RUN_ID")
-    event_path = get_env("GITHUB_EVENT_PATH")
 
+def check_status(
+    jobs,
+    github_token,
+    requires_files_changed,
+    event_name,
+    repo,
+    run_id,
+    event_path,
+):
     # Check for required files changed on PRs
     if requires_files_changed and event_name == "pull_request":
         print(f"Checking if PR has changed files matching patterns: {requires_files_changed}")
@@ -46,7 +41,7 @@ def main():
         files = fetch_json(api_url, github_token)
         if not isinstance(files, list):
             print("No changed files found in API response. Check permissions, token, and run ID.", file=sys.stderr)
-            sys.exit(1)
+            return False
         changed_files = [f["filename"] for f in files]
         patterns = [p.strip() for p in requires_files_changed.split(",") if p.strip()]
         match_found = any(
@@ -55,7 +50,7 @@ def main():
         )
         if not match_found:
             print("No changed files match the required patterns. Exiting successfully.")
-            sys.exit(0)
+            return True
         print("Found matching files. Proceeding with workflow status check.")
 
     # Check job statuses
@@ -77,7 +72,7 @@ def main():
             found_names = [j["name"] for j in jobs_response.get("jobs", [])]
             print(f"Jobs found: {', '.join(found_names)}")
             print(f"Job '{job}' does not exist after {max_attempts} attempts.", file=sys.stderr)
-            sys.exit(1)
+            return False
         # Wait for job to finish
         while True:
             conclusion = job_obj.get("conclusion")
@@ -91,8 +86,32 @@ def main():
                 print(f"Job '{job}' completed successfully.")
             elif conclusion in ("failure", "cancelled"):
                 print(f"Job '{job}' failed or was cancelled.", file=sys.stderr)
-                sys.exit(1)
+                return False
             break
+    return True
+
+def main():
+    try:
+        jobs = [j.strip() for j in get_env("INPUT_JOBS").split(",") if j.strip()]
+        github_token = get_env("INPUT_GITHUB_TOKEN")
+        requires_files_changed = get_env("INPUT_REQUIRES_FILES_CHANGED", required=False, default="")
+        event_name = get_env("GITHUB_EVENT_NAME")
+        repo = get_env("GITHUB_REPOSITORY")
+        run_id = get_env("GITHUB_RUN_ID")
+        event_path = get_env("GITHUB_EVENT_PATH")
+    except Exception as e:
+        print(str(e), file=sys.stderr)
+        sys.exit(1)
+    result = check_status(
+        jobs,
+        github_token,
+        requires_files_changed,
+        event_name,
+        repo,
+        run_id,
+        event_path,
+    )
+    sys.exit(0 if result else 1)
 
 if __name__ == "__main__":
     main()
