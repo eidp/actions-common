@@ -10,14 +10,16 @@ This action requires a GitHub token with the following permissions:
   permissions:
     contents: read
     actions: read
+    pull-requests: read # Only needed if you use the `required-files-changed` input
 ```
 
 ## 🔧 Inputs
 
-|     Name     |                      Description                     |Required|Default|
-|--------------|------------------------------------------------------|--------|-------|
-|    `jobs`    |Comma-separated list of job names to check status for.|   Yes  |   ``  |
-|`github-token`|      GitHub token to authenticate API requests.      |   Yes  |       |
+|          Name          |                                                                  Description                                                                  |Required|Default|
+|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|--------|-------|
+|         `jobs`         |                                             Comma-separated list of job names to check status for.                                            |   Yes  |   ``  |
+|     `github-token`     |                                                   GitHub token to authenticate API requests.                                                  |   Yes  |       |
+|`requires-files-changed`|Comma-separated list of file paths or globs. If specified and this workflow runs on a PR with no matching files changed, it exits successfully.|   No   |   ``  |
 
 ## 📤 Outputs
 
