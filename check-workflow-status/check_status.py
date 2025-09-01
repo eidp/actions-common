@@ -55,7 +55,7 @@ def check_status(
 
     # Check job statuses
     jobs_api_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
-    max_attempts = 10
+    max_attempts = 25
     for job in jobs:
         attempt = 1
         job_found = False
