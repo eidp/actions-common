@@ -140,6 +140,29 @@ jobs:
         expected: success
         actual: ${{ steps.check-workflow-status-required-files.outcome }}
 
+  test-commit-sha:
+    runs-on: kubernetes-runner
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+
+    - name: Get commit SHA
+      id: commit-sha
+      uses: ./commit-sha
+
+    - name: Assert commit SHA
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
+      with:
+        expected: ${{ github.event.pull_request.head.sha || github.sha }}
+        actual: ${{ steps.commit-sha.outputs.sha }}
+
+    - name: Assert commit short SHA
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2
+      with:
+        expected: ${{ steps.commit-sha.outputs.short-sha }}
+        actual: ${{ steps.commit-sha.outputs.sha }}
+        comparison: 'startsWith'
+
   check-workflow-status:
     runs-on: kubernetes-runner
     permissions:
@@ -152,5 +175,5 @@ jobs:
       id: check-workflow-status
       uses: ./check-workflow-status
       with:
-        jobs: 'test-update-major-version-tag,test-check-workflow-status'
+        jobs: 'test-update-major-version-tag,test-check-workflow-status,test-commit-sha'
         github-token: ${{ secrets.GITHUB_TOKEN }}
