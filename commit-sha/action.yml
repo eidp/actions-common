@@ -1,0 +1,33 @@
+name: 'Commit SHA'
+description: >
+  Set the source commit SHA for a workflow as output variable.
+  Regardless of whether the workflow is triggered by a push or a pull request, this action
+  will provide the actual source commit SHA.
+
+branding:
+  icon: 'git-branch'
+  color: 'yellow'
+inputs:
+  commit-short-sha-length:
+    description: 'Length of the short commit SHA'
+    required: false
+    default: '7'
+outputs:
+  sha:
+    description: 'The commit SHA used as source commit'
+    value: ${{ steps.set-commit-sha.outputs.commit-sha }}
+  short-sha:
+    description: 'The short commit SHA as source commit'
+    value: ${{ steps.set-commit-sha.outputs.commit-short-sha }}
+runs:
+  using: 'composite'
+  steps:
+  - name: Determine commit SHA
+    id: set-commit-sha
+    shell: bash
+    env:
+      COMMIT_SHORT_SHA_LENGTH: ${{ inputs.commit-short-sha-length }}
+    run: |
+      COMMIT_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+      echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
+      echo "commit-short-sha=${COMMIT_SHA:0:$COMMIT_SHORT_SHA_LENGTH}" >> $GITHUB_OUTPUT
