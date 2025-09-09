@@ -80,6 +80,8 @@ jobs:
       uses: renovatebot/github-action@6927a58a017ee9ac468a34a5b0d2a9a9bd45cac3 # v43.0.11
       env:
         GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+        HARBOR_USERNAME: ${{ secrets.HARBOR_USERNAME || '' }}
+        HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD || '' }}
         RENOVATE_LOG_LEVEL: ${{ vars.RENOVATE_LOG_LEVEL || 'INFO' }}
         RENOVATE_REPOSITORIES: "eidp/${{ github.event.repository.name }}"
       with:
