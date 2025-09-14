@@ -25,10 +25,10 @@ on:
         default: ${{ github.event.repository.default_branch }}
       renovate-config-file-path:
         description: >
-          The full path to the Renovate configuration file within the configuration repository, relative to the root.
+          The full path to the Renovate configuration file, relative to the root.
         required: false
         type: string
-        default: renovate.js
+        default: renovate-config/renovate.js
       renovate-image:
         description: >
           The Renovate Docker image name to use. 
@@ -85,7 +85,7 @@ jobs:
         RENOVATE_LOG_LEVEL: ${{ vars.RENOVATE_LOG_LEVEL || 'INFO' }}
         RENOVATE_REPOSITORIES: "eidp/${{ github.event.repository.name }}"
       with:
-        configurationFile: ./renovate-config/${{ inputs.renovate-config-file-path }}
+        configurationFile: "./${{ inputs.renovate-config-file-path }}"
         renovate-image: ${{ inputs.renovate-image }}
         renovate-version: ${{ inputs.renovate-version }}
         token: '${{ steps.get_token.outputs.token }}'
