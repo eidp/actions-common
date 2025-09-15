@@ -12,8 +12,7 @@ jobs:
   renovate:
     uses: ./.github/workflows/renovate.yml
     with:
-        runs-on: dind-runner
-        renovate-config-repo: renovate-config
+      runs-on: dind-runner
     secrets:
       GITHUB_APP_ID: ${{ secrets.DEP_MANAGER_GITHUB_APP_ID }}
       GITHUB_APP_PEM_FILE: ${{ secrets.DEP_MANAGER_GITHUB_APP_PEM_FILE }}
