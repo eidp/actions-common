@@ -10,25 +10,12 @@ on:
         required: false
         type: string
         default: ubuntu-latest
-      renovate-config-repo:
-        description: >
-          The repository where the Renovate configuration is stored. 
-          This must be the repository name **without** the owner, e.g., `renovate-config`.
-        required: false
-        type: string
-        default: ${{ github.event.repository.name }}
-      renovate-config-repo-ref:
-        description: >
-          The branch or tag of the Renovate configuration repository to use.
-        required: false
-        type: string
-        default: ${{ github.event.repository.default_branch }}
       renovate-config-file-path:
         description: >
           The full path to the Renovate configuration file, relative to the root.
         required: false
         type: string
-        default: renovate-config/renovate.js
+        default: renovate.json
       renovate-image:
         description: >
           The Renovate Docker image name to use. 
@@ -67,15 +54,7 @@ jobs:
 
     - name: Checkout
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
-
-    - name: Checkout Renovate Config Repo
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
-      with:
-        repository: ${{ github.repository_owner }}/${{ inputs.renovate-config-repo }}
-        ref: ${{ inputs.renovate-config-repo-ref }}
-        token: ${{ steps.get_token.outputs.token }}
-        path: ./renovate-config
-
+      
     - name: Renovate
       uses: renovatebot/github-action@f8af9272cd94a4637c29f60dea8731afd3134473 # v43.0.12
       env:
@@ -84,6 +63,7 @@ jobs:
         HARBOR_PASSWORD: ${{ secrets.HARBOR_PASSWORD || '' }}
         RENOVATE_LOG_LEVEL: ${{ vars.RENOVATE_LOG_LEVEL || 'INFO' }}
         RENOVATE_REPOSITORIES: "eidp/${{ github.event.repository.name }}"
+        RENOVATE_ONBOARDING_CONFIG: '{ "$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>eidp/renovate-config"] }'
       with:
         configurationFile: "./${{ inputs.renovate-config-file-path }}"
         renovate-image: ${{ inputs.renovate-image }}
