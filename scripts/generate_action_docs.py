@@ -86,6 +86,13 @@ def parse_action_file(action_dir: Path, repo_ref: str):
 
 {usage}
 """
+
+    # Check for custom README content
+    custom_readme = action_dir / "EXAMPLES.md"
+    if custom_readme.exists():
+        custom_content = custom_readme.read_text().strip()
+        block += f"\n\n{custom_content}"
+
     return name, block.strip()
 
 def update_readme(readme_path: Path, name: str, block: str):

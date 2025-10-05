@@ -10,9 +10,22 @@ on:
 
 jobs:
   renovate:
-    uses: ./.github/workflows/renovate.yml
-    with:
-      runs-on: dind-runner
-    secrets:
-      GITHUB_APP_ID: ${{ secrets.DEP_MANAGER_GITHUB_APP_ID }}
-      GITHUB_APP_PEM_FILE: ${{ secrets.DEP_MANAGER_GITHUB_APP_PEM_FILE }}
+    runs-on: dind-runner
+    steps:
+    - name: Checkout
+      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+    - name: Log in to Container Registry
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+      with:
+        registry: cr.eidp.io
+        username: ${{ secrets. RENOVATE_DOCKER_CR_EIDP_IO_USERNAME }}
+        password: ${{ secrets. RENOVATE_DOCKER_CR_EIDP_IO_PASSWORD }}
+
+    - name: Run Renovate
+      uses: ./renovate
+      with:
+        renovate-image: "cr.eidp.io/docker/renovate/renovate"
+        github-app-id: ${{ secrets.DEP_MANAGER_GITHUB_APP_ID }}
+        github-app-pem: ${{ secrets.DEP_MANAGER_GITHUB_APP_PEM_FILE }}
+        all-secrets: ${{ toJSON(secrets) }}
