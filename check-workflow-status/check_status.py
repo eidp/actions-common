@@ -32,7 +32,10 @@ def check_status(
     event_path,
 ):
     # Check for required files changed on PRs
-    if requires_files_changed and event_name == "pull_request":
+    if requires_files_changed:
+        if event_name != "pull_request":
+            print("Unable to perform file change checks outside of pull requests, exiting.")
+            return False
         print(f"Checking if PR has changed files matching patterns: {requires_files_changed}")
         with open(event_path, "r") as f:
             event = json.load(f)
