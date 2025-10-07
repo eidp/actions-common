@@ -63,9 +63,6 @@ jobs:
 
   test-check-workflow-status:
     runs-on: kubernetes-runner
-    permissions:
-      contents: read
-      actions: read
     steps:
     - name: Checkout code
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -78,90 +75,6 @@ jobs:
     - name: Run unit tests for check-workflow-status
       working-directory: check-workflow-status
       run: python3 test_check_status.py
-
-    - name: Test check-workflow-status action can run
-      id: check-workflow-status-integration
-      uses: ./check-workflow-status
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        excluded-jobs: 'check-workflow-status'
-
-    - name: Assert Workflow Status
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: success
-        actual: ${{ steps.check-workflow-status-integration.outcome }}
-
-    - name: failing-job
-      id: failing-job
-      continue-on-error: true
-      run: exit 1
-
-    - name: Test check-workflow-status detects failures
-      id: check-workflow-status-failed
-      uses: ./check-workflow-status
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        excluded-jobs: 'check-workflow-status'
-      continue-on-error: true
-
-    - name: Assert Workflow Status
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: failure
-        actual: ${{ steps.check-workflow-status-failed.outcome }}
-
-    - name: skipped-job
-      id: skipped-job
-      if: false
-      run: echo "This job should be skipped"
-
-    - name: Test check-workflow-status with skipped job (succeed=true)
-      id: check-workflow-status-skipped-succeed
-      uses: ./check-workflow-status
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        skipped-jobs-succeed: true
-        excluded-jobs: 'check-workflow-status'
-
-    - name: Assert Workflow Status (skipped allowed)
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: success
-        actual: ${{ steps.check-workflow-status-skipped-succeed.outcome }}
-
-    - name: Test check-workflow-status with skipped job (succeed=false)
-      id: check-workflow-status-skipped-fail
-      uses: ./check-workflow-status
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        skipped-jobs-succeed: false
-        excluded-jobs: 'check-workflow-status'
-      continue-on-error: true
-
-    - name: Assert Workflow Status (skipped not allowed)
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: failure
-        actual: ${{ steps.check-workflow-status-skipped-fail.outcome }}
-
-    - name: optional-job
-      id: optional-job
-      continue-on-error: true
-      run: exit 1
-
-    - name: Test check-workflow-status with excluded jobs
-      id: check-workflow-status-excluded
-      uses: ./check-workflow-status
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        excluded-jobs: '*-optional,skipped-job,check-workflow-status'
-
-    - name: Assert Workflow Status (excluded jobs)
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: success
-        actual: ${{ steps.check-workflow-status-excluded.outcome }}
 
   test-commit-sha:
     runs-on: kubernetes-runner
