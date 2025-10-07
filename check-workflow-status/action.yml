@@ -16,6 +16,11 @@ inputs:
     description: >
       GitHub token to authenticate API requests.
     required: true
+  excluded-jobs:
+    description: >
+      Comma-separated list of job name patterns to exclude from status checks. Supports glob patterns (e.g., 'deploy-*,test-optional'). Excluded jobs are not required to succeed.
+    required: false
+    default: ''
   timeout-minutes:
     description: >
       Maximum time to wait for all jobs to complete (in minutes). Default: 30 minutes.
@@ -52,6 +57,7 @@ runs:
         python3 "${{ github.action_path }}/check_status.py"
       env:
         INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+        INPUT_EXCLUDED_JOBS: ${{ inputs.excluded-jobs }}
         INPUT_TIMEOUT_MINUTES: ${{ inputs.timeout-minutes }}
         INPUT_INITIAL_WAIT_SECONDS: ${{ inputs.initial-wait-seconds }}
         INPUT_SKIPPED_JOBS_SUCCEED: ${{ inputs.skipped-jobs-succeed }}

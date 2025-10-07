@@ -351,6 +351,18 @@ def main():
     print("Testing no jobs found...")
     test_no_jobs_found()
 
+    print("Testing excluded jobs (exact match)...")
+    test_excluded_jobs_exact()
+
+    print("Testing excluded jobs (glob pattern)...")
+    test_excluded_jobs_glob()
+
+    print("Testing excluded jobs (multiple patterns)...")
+    test_excluded_jobs_multiple()
+
+    print("Testing excluded jobs (non-excluded fails)...")
+    test_excluded_jobs_non_excluded_fails()
+
     print("All tests passed.")
 
 if __name__ == "__main__":

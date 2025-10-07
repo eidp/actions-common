@@ -141,6 +141,24 @@ jobs:
         expected: failure
         actual: ${{ steps.check-workflow-status-skipped-fail.outcome }}
 
+    - name: optional-job
+      id: optional-job
+      continue-on-error: true
+      run: exit 1
+
+    - name: Test check-workflow-status with excluded jobs
+      id: check-workflow-status-excluded
+      uses: ./check-workflow-status
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        excluded-jobs: '*-optional,skipped-job'
+
+    - name: Assert Workflow Status (excluded jobs)
+      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
+      with:
+        expected: success
+        actual: ${{ steps.check-workflow-status-excluded.outcome }}
+
   test-commit-sha:
     runs-on: kubernetes-runner
     steps:

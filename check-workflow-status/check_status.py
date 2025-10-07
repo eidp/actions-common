@@ -3,6 +3,7 @@ import sys
 import time
 import urllib.request
 import json
+import fnmatch
 
 
 def get_env(name, required=True, default=None):
@@ -25,6 +26,7 @@ def check_status(
     github_token,
     repo,
     run_id,
+    excluded_jobs="",
     timeout_minutes=30,
     initial_wait_seconds=10,
     skipped_jobs_succeed=True,
@@ -33,6 +35,16 @@ def check_status(
 ):
     start_time = time.time()
     timeout_seconds = timeout_minutes * 60
+
+    # Parse excluded job patterns
+    excluded_patterns = [p.strip() for p in excluded_jobs.split(",") if p.strip()]
+
+    def is_excluded(job_name):
+        """Check if a job name matches any excluded pattern."""
+        return any(fnmatch.fnmatch(job_name, pattern) for pattern in excluded_patterns)
+
+    if excluded_patterns:
+        print(f"Excluding jobs matching patterns: {excluded_patterns}")
 
     # Phase 1: Wait the full initial wait period for jobs to appear
     jobs_api_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
@@ -51,7 +63,7 @@ def check_status(
 
         jobs_response = fetch_json(jobs_api_url, github_token)
         all_jobs = jobs_response.get("jobs", [])
-        other_jobs = [j for j in all_jobs if j["name"] != current_job_name]
+        other_jobs = [j for j in all_jobs if j["name"] != current_job_name and not is_excluded(j["name"])]
 
         if other_jobs:
             other_jobs_found = True
@@ -69,7 +81,7 @@ def check_status(
         print(f"All jobs in workflow: {all_job_names}", file=sys.stderr)
         return False
 
-    print(f"Initial wait complete. Found {len(other_jobs)} job(s) to monitor. (Other jobs may appear later.)")
+    print(f"Initial wait complete. Found {len(other_jobs)} job(s) to monitor.")
 
     # Phase 2: Monitor all jobs until completion or timeout
     print(f"Monitoring jobs (polling every {poll_interval_seconds}s, timeout: {timeout_minutes} minutes)...")
@@ -88,7 +100,7 @@ def check_status(
 
         jobs_response = fetch_json(jobs_api_url, github_token)
         all_jobs = jobs_response.get("jobs", [])
-        other_jobs = [j for j in all_jobs if j["name"] != current_job_name]
+        other_jobs = [j for j in all_jobs if j["name"] != current_job_name and not is_excluded(j["name"])]
 
         # Track all discovered jobs
         for job in other_jobs:
@@ -149,6 +161,8 @@ def main():
             kwargs["skipped_jobs_succeed"] = get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False).lower() == "true"
         if get_env("INPUT_POLL_INTERVAL_SECONDS", required=False):
             kwargs["poll_interval_seconds"] = int(get_env("INPUT_POLL_INTERVAL_SECONDS", required=False))
+        if get_env("INPUT_EXCLUDED_JOBS", required=False):
+            kwargs["excluded_jobs"] = get_env("INPUT_EXCLUDED_JOBS", required=False)
     except Exception as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
