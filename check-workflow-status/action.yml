@@ -9,24 +9,33 @@ description: |
     permissions:
       contents: read
       actions: read
-      pull-requests: read # Only needed if you use the `required-files-changed` input
   ```
 author: EIDP
 inputs:
-  jobs:
-    description: >
-      Comma-separated list of job names to check status for.
-    required: true
-    default: ''
   github-token:
     description: >
       GitHub token to authenticate API requests.
     required: true
-  requires-files-changed:
+  timeout-minutes:
     description: >
-      Comma-separated list of file paths or globs. If specified and this workflow runs on a PR with no matching files changed, it exits successfully.
+      Maximum time to wait for all jobs to complete (in minutes). Default: 30 minutes.
     required: false
-    default: ''
+    default: '30'
+  initial-wait-seconds:
+    description: >
+      Time to wait for the first job to appear in the workflow (in seconds). Default: 10 seconds.
+    required: false
+    default: '10'
+  skipped-jobs-succeed:
+    description: >
+      Whether to treat skipped jobs as successful. Set to 'false' to fail if any job is skipped. Default: true.
+    required: false
+    default: 'true'
+  poll-interval-seconds:
+    description: >
+      Time between polling API for job status updates (in seconds). Default: 5 seconds.
+    required: false
+    default: '5'
 
 runs:
   using: composite
@@ -42,6 +51,8 @@ runs:
       run: |
         python3 "${{ github.action_path }}/check_status.py"
       env:
-        INPUT_JOBS: ${{ inputs.jobs }}
         INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
-        INPUT_REQUIRES_FILES_CHANGED: ${{ inputs.requires-files-changed }}
+        INPUT_TIMEOUT_MINUTES: ${{ inputs.timeout-minutes }}
+        INPUT_INITIAL_WAIT_SECONDS: ${{ inputs.initial-wait-seconds }}
+        INPUT_SKIPPED_JOBS_SUCCEED: ${{ inputs.skipped-jobs-succeed }}
+        INPUT_POLL_INTERVAL_SECONDS: ${{ inputs.poll-interval-seconds }}

@@ -66,7 +66,6 @@ jobs:
     permissions:
       contents: read
       actions: read
-      pull-requests: read
     steps:
     - name: Checkout code
       uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -80,43 +79,27 @@ jobs:
       working-directory: check-workflow-status
       run: python3 test_check_status.py
 
-    - name: check-workflow-status success
-      id: check-workflow-status-success
+    - name: Test check-workflow-status action can run
+      id: check-workflow-status-integration
       uses: ./check-workflow-status
       with:
-        jobs: 'test-update-major-version-tag'
         github-token: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Assert Workflow Status
       uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
       with:
         expected: success
-        actual: ${{ steps.check-workflow-status-success.outcome }}
-
-    - name: check-workflow-status non-existent-job
-      id: check-workflow-status-non-existent-job
-      uses: ./check-workflow-status
-      with:
-        jobs: 'test-update-major-version-tag,non-existent-job'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
-
-    - name: Assert Workflow Status
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: failure
-        actual: ${{ steps.check-workflow-status-non-existent-job.outcome }}
+        actual: ${{ steps.check-workflow-status-integration.outcome }}
 
     - name: failing-job
       id: failing-job
       continue-on-error: true
       run: exit 1
 
-    - name: check-workflow-status failed
+    - name: Test check-workflow-status detects failures
       id: check-workflow-status-failed
       uses: ./check-workflow-status
       with:
-        jobs: 'test-update-major-version-tag,failing-job'
         github-token: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
 
@@ -126,28 +109,37 @@ jobs:
         expected: failure
         actual: ${{ steps.check-workflow-status-failed.outcome }}
 
-    - name: check-workflow-status succeeds when no required files are present
-      id: check-workflow-status-required-files
+    - name: skipped-job
+      id: skipped-job
+      if: false
+      run: echo "This job should be skipped"
+
+    - name: Test check-workflow-status with skipped job (succeed=true)
+      id: check-workflow-status-skipped-succeed
       uses: ./check-workflow-status
       with:
-        jobs: 'failing-job'
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        requires-files-changed: this/does/not.exist,neither/**/does.this
-      continue-on-error: true
-    
-    - name: Assert workflow status (on PR)
+        skipped-jobs-succeed: true
+
+    - name: Assert Workflow Status (skipped allowed)
       uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      if: ${{ github.event_name == 'pull_request' }}
       with:
         expected: success
-        actual: ${{ steps.check-workflow-status-required-files.outcome }}
+        actual: ${{ steps.check-workflow-status-skipped-succeed.outcome }}
 
-    - name: Assert workflow status (on non-PR)
+    - name: Test check-workflow-status with skipped job (succeed=false)
+      id: check-workflow-status-skipped-fail
+      uses: ./check-workflow-status
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        skipped-jobs-succeed: false
+      continue-on-error: true
+
+    - name: Assert Workflow Status (skipped not allowed)
       uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      if: ${{ github.event_name != 'pull_request' }}
       with:
         expected: failure
-        actual: ${{ steps.check-workflow-status-required-files.outcome }}
+        actual: ${{ steps.check-workflow-status-skipped-fail.outcome }}
 
   test-commit-sha:
     runs-on: kubernetes-runner
@@ -184,5 +176,4 @@ jobs:
       id: check-workflow-status
       uses: ./check-workflow-status
       with:
-        jobs: 'test-update-major-version-tag,test-check-workflow-status,test-commit-sha'
         github-token: ${{ secrets.GITHUB_TOKEN }}

@@ -10,16 +10,17 @@ This action requires a GitHub token with the following permissions:
   permissions:
     contents: read
     actions: read
-    pull-requests: read # Only needed if you use the `required-files-changed` input
 ```
 
 ## 🔧 Inputs
 
-|          Name          |                                                                  Description                                                                  |Required|Default|
-|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|--------|-------|
-|         `jobs`         |                                             Comma-separated list of job names to check status for.                                            |   Yes  |   ``  |
-|     `github-token`     |                                                   GitHub token to authenticate API requests.                                                  |   Yes  |       |
-|`requires-files-changed`|Comma-separated list of file paths or globs. If specified and this workflow runs on a PR with no matching files changed, it exits successfully.|   No   |   ``  |
+|          Name         |                                               Description                                               |Required|Default|
+|-----------------------|---------------------------------------------------------------------------------------------------------|--------|-------|
+|     `github-token`    |                                GitHub token to authenticate API requests.                               |   Yes  |       |
+|   `timeout-minutes`   |             Maximum time to wait for all jobs to complete (in minutes). Default: 30 minutes.            |   No   |  `30` |
+| `initial-wait-seconds`|       Time to wait for the first job to appear in the workflow (in seconds). Default: 10 seconds.       |   No   |  `10` |
+| `skipped-jobs-succeed`|Whether to treat skipped jobs as successful. Set to 'false' to fail if any job is skipped. Default: true.|   No   | `true`|
+|`poll-interval-seconds`|            Time between polling API for job status updates (in seconds). Default: 5 seconds.            |   No   |  `5`  |
 
 ## 📤 Outputs
 

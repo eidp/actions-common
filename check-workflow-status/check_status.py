@@ -3,7 +3,6 @@ import sys
 import time
 import urllib.request
 import json
-import fnmatch
 
 
 def get_env(name, required=True, default=None):
@@ -23,96 +22,136 @@ def fetch_json(url, token):
 
 
 def check_status(
-    jobs,
     github_token,
-    requires_files_changed,
-    event_name,
     repo,
     run_id,
-    event_path,
+    timeout_minutes=30,
+    initial_wait_seconds=10,
+    skipped_jobs_succeed=True,
+    poll_interval_seconds=5,
+    current_job_name="check-workflow-status",
 ):
-    # Check for required files changed on PRs
-    if requires_files_changed:
-        if event_name != "pull_request":
-            print("Unable to perform file change checks outside of pull requests, exiting.")
-            return False
-        print(f"Checking if PR has changed files matching patterns: {requires_files_changed}")
-        with open(event_path, "r") as f:
-            event = json.load(f)
-        pr_number = event["number"]
-        api_url = f"https://api.github.com/repos/{repo}/pulls/{pr_number}/files"
-        files = fetch_json(api_url, github_token)
-        if not isinstance(files, list):
-            print("No changed files found in API response. Check permissions, token, and run ID.", file=sys.stderr)
-            return False
-        changed_files = [f["filename"] for f in files]
-        patterns = [p.strip() for p in requires_files_changed.split(",") if p.strip()]
-        match_found = any(
-            any(fnmatch.fnmatch(file, pattern) for pattern in patterns)
-            for file in changed_files
-        )
-        if not match_found:
-            print("No changed files match the required patterns. Exiting successfully.")
-            return True
-        print("Found matching files. Proceeding with workflow status check.")
+    start_time = time.time()
+    timeout_seconds = timeout_minutes * 60
 
-    # Check job statuses
+    # Phase 1: Wait for at least one job (other than current) to appear
     jobs_api_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
-    max_attempts = 25
-    for job in jobs:
-        attempt = 1
-        job_found = False
-        while attempt <= max_attempts:
-            jobs_response = fetch_json(jobs_api_url, github_token)
-            job_obj = next((j for j in jobs_response.get("jobs", []) if j["name"] == job), None)
-            if job_obj:
-                job_found = True
-                break
-            print(f"Job '{job}' not found. Attempt {attempt}/{max_attempts}. Waiting...")
-            time.sleep(2)
-            attempt += 1
-        if not job_found:
-            found_names = [j["name"] for j in jobs_response.get("jobs", [])]
-            print(f"Jobs found: {', '.join(found_names)}")
-            print(f"Job '{job}' does not exist after {max_attempts} attempts.", file=sys.stderr)
+    print(f"Waiting up to {initial_wait_seconds}s for jobs to appear (excluding current job: '{current_job_name}')...")
+
+    initial_wait_end = start_time + initial_wait_seconds
+    other_jobs_found = False
+
+    while time.time() < initial_wait_end:
+        if time.time() - start_time > timeout_seconds:
+            print(f"Overall timeout of {timeout_minutes} minutes exceeded.", file=sys.stderr)
             return False
-        # Wait for job to finish
-        while True:
-            conclusion = job_obj.get("conclusion")
-            if conclusion is None:
-                print(f"Job '{job}' is still in progress. Waiting...")
-                time.sleep(1)
-                jobs_response = fetch_json(jobs_api_url, github_token)
-                job_obj = next((j for j in jobs_response.get("jobs", []) if j["name"] == job), None)
-                continue
-            if conclusion == "success":
-                print(f"Job '{job}' completed successfully.")
-            elif conclusion in ("failure", "cancelled"):
-                print(f"Job '{job}' failed or was cancelled.", file=sys.stderr)
-                return False
+
+        jobs_response = fetch_json(jobs_api_url, github_token)
+        all_jobs = jobs_response.get("jobs", [])
+        other_jobs = [j for j in all_jobs if j["name"] != current_job_name]
+
+        if other_jobs:
+            other_jobs_found = True
+            print(f"Found {len(other_jobs)} job(s) to monitor.")
             break
-    return True
+
+        time.sleep(1)
+
+    if not other_jobs_found:
+        print(f"No jobs found after {initial_wait_seconds}s initial wait period.", file=sys.stderr)
+        print(f"Current job name: '{current_job_name}'", file=sys.stderr)
+        all_job_names = [j["name"] for j in all_jobs]
+        print(f"All jobs in workflow: {all_job_names}", file=sys.stderr)
+        return False
+
+    # Phase 2: Monitor all jobs until completion or timeout
+    print(f"Monitoring jobs (polling every {poll_interval_seconds}s, timeout: {timeout_minutes} minutes)...")
+    discovered_jobs = set()
+    completed_jobs = {}
+
+    while True:
+        elapsed = time.time() - start_time
+        if elapsed > timeout_seconds:
+            print(f"Overall timeout of {timeout_minutes} minutes exceeded.", file=sys.stderr)
+            print(f"Completed jobs: {len(completed_jobs)}/{len(discovered_jobs)}", file=sys.stderr)
+            incomplete = discovered_jobs - set(completed_jobs.keys())
+            if incomplete:
+                print(f"Incomplete jobs: {sorted(incomplete)}", file=sys.stderr)
+            return False
+
+        jobs_response = fetch_json(jobs_api_url, github_token)
+        all_jobs = jobs_response.get("jobs", [])
+        other_jobs = [j for j in all_jobs if j["name"] != current_job_name]
+
+        # Track all discovered jobs
+        for job in other_jobs:
+            job_name = job["name"]
+            if job_name not in discovered_jobs:
+                discovered_jobs.add(job_name)
+                print(f"Discovered job: '{job_name}'")
+
+        # Check completion status
+        for job in other_jobs:
+            job_name = job["name"]
+            conclusion = job.get("conclusion")
+
+            if conclusion is not None and job_name not in completed_jobs:
+                completed_jobs[job_name] = conclusion
+
+                if conclusion == "success":
+                    print(f"✓ Job '{job_name}' completed successfully.")
+                elif conclusion == "skipped":
+                    if skipped_jobs_succeed:
+                        print(f"✓ Job '{job_name}' was skipped (treated as success).")
+                    else:
+                        print(f"✗ Job '{job_name}' was skipped (treated as failure).", file=sys.stderr)
+                        return False
+                elif conclusion in ("failure", "cancelled"):
+                    print(f"✗ Job '{job_name}' {conclusion}.", file=sys.stderr)
+                    return False
+                else:
+                    print(f"✗ Job '{job_name}' has unexpected conclusion: {conclusion}.", file=sys.stderr)
+                    return False
+
+        # Check if all discovered jobs are complete
+        if len(completed_jobs) == len(discovered_jobs) and len(discovered_jobs) > 0:
+            print(f"All {len(discovered_jobs)} job(s) completed successfully in {elapsed:.1f}s.")
+            return True
+
+        # Show progress
+        in_progress = discovered_jobs - set(completed_jobs.keys())
+        if in_progress:
+            print(f"In progress ({len(completed_jobs)}/{len(discovered_jobs)} complete): {sorted(in_progress)}")
+
+        time.sleep(poll_interval_seconds)
 
 def main():
     try:
-        jobs = [j.strip() for j in get_env("INPUT_JOBS").split(",") if j.strip()]
         github_token = get_env("INPUT_GITHUB_TOKEN")
-        requires_files_changed = get_env("INPUT_REQUIRES_FILES_CHANGED", required=False, default="")
-        event_name = get_env("GITHUB_EVENT_NAME")
         repo = get_env("GITHUB_REPOSITORY")
         run_id = get_env("GITHUB_RUN_ID")
-        event_path = get_env("GITHUB_EVENT_PATH")
+        current_job_name = get_env("GITHUB_JOB")
+
+        # Parse optional configuration (with defaults in check_status function)
+        kwargs = {}
+        if get_env("INPUT_TIMEOUT_MINUTES", required=False):
+            kwargs["timeout_minutes"] = int(get_env("INPUT_TIMEOUT_MINUTES", required=False))
+        if get_env("INPUT_INITIAL_WAIT_SECONDS", required=False):
+            kwargs["initial_wait_seconds"] = int(get_env("INPUT_INITIAL_WAIT_SECONDS", required=False))
+        if get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False):
+            kwargs["skipped_jobs_succeed"] = get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False).lower() == "true"
+        if get_env("INPUT_POLL_INTERVAL_SECONDS", required=False):
+            kwargs["poll_interval_seconds"] = int(get_env("INPUT_POLL_INTERVAL_SECONDS", required=False))
     except Exception as e:
         print(str(e), file=sys.stderr)
         sys.exit(1)
+
     result = check_status(
-        jobs,
-        github_token,
-        requires_files_changed,
-        event_name,
-        repo,
-        run_id,
-        event_path,
+        github_token=github_token,
+        repo=repo,
+        run_id=run_id,
+        current_job_name=current_job_name,
+        **kwargs
     )
     sys.exit(0 if result else 1)
 
