@@ -25,6 +25,7 @@ def test_dynamic_job_discovery():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=0,
             )
 
     assert result is True, f"Expected all jobs to succeed, got {result}"
@@ -62,6 +63,7 @@ def test_dynamic_job_appearance():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=2,  # Need a few polls for job to appear
             )
 
     assert result is True, f"Expected job to be discovered and succeed, got {result}"
@@ -83,6 +85,7 @@ def test_current_job_excluded():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=0,
             )
 
     assert result is True, f"Expected success (current job excluded), got {result}"
@@ -104,6 +107,7 @@ def test_skipped_jobs_succeed_true():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=0,
             )
 
     assert result is True, f"Expected skipped job to succeed, got {result}"
@@ -125,6 +129,7 @@ def test_skipped_jobs_succeed_false():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=0,
                 skipped_jobs_succeed=False,
             )
 
@@ -148,6 +153,7 @@ def test_job_failure_immediate():
                 github_token="dummy_token",
                 repo="eidp/actions-common",
                 run_id="1",
+                initial_wait_seconds=0,
             )
 
     assert result is False, f"Expected failure due to failed job, got {result}"
@@ -180,6 +186,7 @@ def test_overall_timeout():
                     github_token="dummy_token",
                     repo="eidp/actions-common",
                     run_id="1",
+                    initial_wait_seconds=0,
                     timeout_minutes=1,
                 )
 
@@ -216,6 +223,107 @@ def test_no_jobs_found():
                 )
 
     assert result is False, f"Expected failure (no jobs found), got {result}"
+
+
+# Test: Excluded jobs with exact match
+def test_excluded_jobs_exact():
+    def test_fetch_json(url, token):
+        if "actions/runs" in url and "jobs" in url:
+            return {"jobs": [
+                {"name": "check-workflow-status", "conclusion": None},
+                {"name": "build", "conclusion": "success"},
+                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
+                {"name": "test", "conclusion": "success"},
+            ]}
+        return {}
+
+    with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
+        with mock.patch("time.sleep"):
+            result = check_status.check_status(
+                github_token="dummy_token",
+                repo="eidp/actions-common",
+                run_id="1",
+                initial_wait_seconds=0,
+                excluded_jobs="deploy-staging",
+            )
+
+    assert result is True, f"Expected success (deploy-staging excluded), got {result}"
+
+
+# Test: Excluded jobs with glob pattern
+def test_excluded_jobs_glob():
+    def test_fetch_json(url, token):
+        if "actions/runs" in url and "jobs" in url:
+            return {"jobs": [
+                {"name": "check-workflow-status", "conclusion": None},
+                {"name": "build", "conclusion": "success"},
+                {"name": "deploy-dev", "conclusion": "failure"},  # Excluded by deploy-*
+                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded by deploy-*
+                {"name": "test", "conclusion": "success"},
+            ]}
+        return {}
+
+    with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
+        with mock.patch("time.sleep"):
+            result = check_status.check_status(
+                github_token="dummy_token",
+                repo="eidp/actions-common",
+                run_id="1",
+                initial_wait_seconds=0,
+                excluded_jobs="deploy-*",
+            )
+
+    assert result is True, f"Expected success (deploy-* excluded), got {result}"
+
+
+# Test: Excluded jobs with multiple patterns
+def test_excluded_jobs_multiple():
+    def test_fetch_json(url, token):
+        if "actions/runs" in url and "jobs" in url:
+            return {"jobs": [
+                {"name": "check-workflow-status", "conclusion": None},
+                {"name": "build", "conclusion": "success"},
+                {"name": "deploy-prod", "conclusion": "failure"},  # Excluded by deploy-*
+                {"name": "test-optional", "conclusion": "failure"},  # Excluded by *-optional
+                {"name": "test-required", "conclusion": "success"},
+            ]}
+        return {}
+
+    with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
+        with mock.patch("time.sleep"):
+            result = check_status.check_status(
+                github_token="dummy_token",
+                repo="eidp/actions-common",
+                run_id="1",
+                initial_wait_seconds=0,
+                excluded_jobs="deploy-*,*-optional",
+            )
+
+    assert result is True, f"Expected success (deploy-* and *-optional excluded), got {result}"
+
+
+# Test: Non-excluded job fails
+def test_excluded_jobs_non_excluded_fails():
+    def test_fetch_json(url, token):
+        if "actions/runs" in url and "jobs" in url:
+            return {"jobs": [
+                {"name": "check-workflow-status", "conclusion": None},
+                {"name": "build", "conclusion": "failure"},  # NOT excluded, should fail
+                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
+            ]}
+        return {}
+
+    with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
+        with mock.patch("time.sleep"):
+            result = check_status.check_status(
+                github_token="dummy_token",
+                repo="eidp/actions-common",
+                run_id="1",
+                initial_wait_seconds=0,
+                excluded_jobs="deploy-*",
+            )
+
+    assert result is False, f"Expected failure (build failed), got {result}"
 
 
 def main():

@@ -34,14 +34,17 @@ def check_status(
     start_time = time.time()
     timeout_seconds = timeout_minutes * 60
 
-    # Phase 1: Wait for at least one job (other than current) to appear
+    # Phase 1: Wait the full initial wait period for jobs to appear
     jobs_api_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
-    print(f"Waiting up to {initial_wait_seconds}s for jobs to appear (excluding current job: '{current_job_name}')...")
+    print(f"Waiting {initial_wait_seconds}s for all jobs to appear (excluding current job: '{current_job_name}')...")
 
     initial_wait_end = start_time + initial_wait_seconds
     other_jobs_found = False
+    all_jobs = []
+    other_jobs = []
 
-    while time.time() < initial_wait_end:
+    # Always fetch jobs at least once, then continue polling until initial_wait_seconds
+    while True:
         if time.time() - start_time > timeout_seconds:
             print(f"Overall timeout of {timeout_minutes} minutes exceeded.", file=sys.stderr)
             return False
@@ -52,7 +55,9 @@ def check_status(
 
         if other_jobs:
             other_jobs_found = True
-            print(f"Found {len(other_jobs)} job(s) to monitor.")
+
+        # Check if we've waited long enough
+        if time.time() >= initial_wait_end:
             break
 
         time.sleep(1)
@@ -63,6 +68,8 @@ def check_status(
         all_job_names = [j["name"] for j in all_jobs]
         print(f"All jobs in workflow: {all_job_names}", file=sys.stderr)
         return False
+
+    print(f"Initial wait complete. Found {len(other_jobs)} job(s) to monitor. (Other jobs may appear later.)")
 
     # Phase 2: Monitor all jobs until completion or timeout
     print(f"Monitoring jobs (polling every {poll_interval_seconds}s, timeout: {timeout_minutes} minutes)...")
