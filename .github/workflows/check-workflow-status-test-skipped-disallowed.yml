@@ -1,0 +1,59 @@
+name: check-workflow-status Test - Skipped Jobs Disallowed
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'check-workflow-status/**'
+      - '.github/workflows/check-workflow-status-test-skipped-disallowed.yml'
+  pull_request:
+    paths:
+      - 'check-workflow-status/**'
+      - '.github/workflows/check-workflow-status-test-skipped-disallowed.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  success-job:
+    runs-on: kubernetes-runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Simulate successful job
+        run: echo "This job succeeds"
+
+  skipped-job:
+    runs-on: kubernetes-runner
+    name: This job is always skipped
+    if: false
+    steps:
+      - name: This step never runs
+        run: echo "This job is always skipped"
+
+  check-workflow-status:
+    runs-on: kubernetes-runner
+    needs: [success-job, skipped-job]
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Check workflow status (skipped jobs disallowed)
+        id: check-status
+        uses: ./check-workflow-status
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          skipped-jobs-succeed: false
+        continue-on-error: true
+
+      - name: Verify failure was detected
+        uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
+        with:
+          expected: failure
+          actual: ${{ steps.check-status.outcome }}

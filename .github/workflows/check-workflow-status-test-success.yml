@@ -1,0 +1,57 @@
+name: check-workflow-status Test - All Jobs Succeed
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'check-workflow-status/**'
+      - '.github/workflows/check-workflow-status-test-success.yml'
+  pull_request:
+    paths:
+      - 'check-workflow-status/**'
+      - '.github/workflows/check-workflow-status-test-success.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  success-job-1:
+    runs-on: kubernetes-runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Simulate successful job 1
+        run: echo "Job 1 completed successfully"
+
+  success-job-2:
+    runs-on: kubernetes-runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Simulate successful job 2
+        run: echo "Job 2 completed successfully"
+
+  success-job-3:
+    runs-on: kubernetes-runner
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - name: Simulate successful job 3
+        run: echo "Job 3 completed successfully"
+
+  check-workflow-status:
+    runs-on: kubernetes-runner
+    needs: [success-job-1, success-job-2, success-job-3]
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Check workflow status
+        uses: ./check-workflow-status
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
