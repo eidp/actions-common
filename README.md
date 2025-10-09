@@ -10,7 +10,6 @@ The following GitHub Actions are available in this repository:
 
 - [commit-sha](commit-sha/README.md)
 - [check-workflow-status](check-workflow-status/README.md)
-- [update-major-version-tag](update-major-version-tag/README.md)
 
 <!-- END ACTIONS -->
 
