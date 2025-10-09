@@ -39,7 +39,6 @@ jobs:
 
   check-workflow-status:
     runs-on: kubernetes-runner
-    needs: [success-job, failing-job]
     if: always()
     permissions:
       contents: read
