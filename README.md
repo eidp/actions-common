@@ -10,6 +10,7 @@ The following GitHub Actions are available in this repository:
 
 - [commit-sha](commit-sha/README.md)
 - [check-workflow-status](check-workflow-status/README.md)
+- [renovate](renovate/README.md)
 
 <!-- END ACTIONS -->
 
@@ -20,7 +21,6 @@ The following GitHub Actions are available in this repository:
 The following reusable workflows are available in this repository:
 
 - [common](./.github/workflows/README.md#common-workflow)
-- [renovate](./.github/workflows/README.md#renovate-workflow)
 
 <!-- END SHARED WORKFLOWS -->
 

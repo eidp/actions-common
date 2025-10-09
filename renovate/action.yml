@@ -1,0 +1,142 @@
+name: 'Renovate with Dynamic Secrets'
+description: >-
+  Run Renovate with auto-detected RENOVATE_* secrets from GitHub Secrets.
+
+  Renovate - http://renovatebot.com - is an open-source tool that automates
+  dependency updates across your projects. It helps keep your dependencies
+  up-to-date by creating pull requests when new versions are available,
+  reducing technical debt and security vulnerabilities.
+
+  Key features of this action:
+  - Dynamic secret detection: Automatically detects and passes all RENOVATE_*
+    secrets from your GitHub Secrets as environment variables. Existing environment variables
+    will be overwritten if they conflict.
+  - GitHub App authentication: Uses a GitHub App for improved API rate limits
+    and better permission control
+  - Flexible configuration: Supports custom Renovate configs, Docker images,
+    and repository targeting
+  - Registry authentication: Automatically configures authentication for npm,
+    Docker, and other registries using your secrets
+  
+author: 'EIDP'
+
+branding:
+  icon: 'refresh-cw'
+  color: 'blue'
+
+inputs:
+  github-app-id:
+    description: 'The ID of the GitHub App used for Renovate'
+    required: true
+  
+  github-app-pem:
+    description: 'The private key (in PEM format) of the GitHub App used for Renovate'
+    required: true
+  
+  all-secrets:
+    description: 'JSON string of all secrets (use toJSON(secrets)) or a manually specified JSON object with RENOVATE_* keys. See README for examples.'
+    required: true
+  
+  renovate-config-file-path:
+    description: 'The full path to the Renovate configuration file, relative to the root'
+    required: false
+    default: 'renovate.json'
+  
+  renovate-image:
+    description: |
+      The Renovate Docker image name to use.
+      If omitted, uses ghcr.io/renovatebot/renovate.
+    required: false
+    default: 'ghcr.io/renovate/renovate'
+  
+  renovate-version:
+    description: |
+      The Renovate version to use.
+      If omitted, uses the default version Docker tag.
+    required: false
+    default: ''
+  
+  log-level:
+    description: 'Renovate log level (debug, info, warn, error)'
+    required: false
+    default: 'debug'
+  
+  repository:
+    description: |
+      Repository to run Renovate on.
+      Format: owner/repo
+      Defaults to current repository if not specified.
+    required: false
+    default: ''
+  
+  onboarding-config:
+    description: |
+      Onboarding config to use when generating a onboarding PR for Renovate.
+    required: false
+    default: '{ "$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>eidp/renovate-config"] }'
+  
+runs:
+  using: 'composite'
+  steps:
+    - name: Validate inputs
+      shell: bash
+      run: |
+        echo "🔍 Validating inputs..."
+        
+        if [ -z "${{ inputs.github-app-id }}" ]; then
+          echo "❌ Error: github-app-id is required"
+          exit 1
+        fi
+        
+        if [ -z "${{ inputs.github-app-pem }}" ]; then
+          echo "❌ Error: github-app-pem is required"
+          exit 1
+        fi
+        
+        if [ -z "${{ inputs.all-secrets }}" ]; then
+          echo "❌ Error: all-secrets is required. Use toJSON(secrets) to pass secrets."
+          exit 1
+        fi
+        
+        echo "✅ All required inputs provided"
+
+    - name: Get GitHub App Token
+      id: get_token
+      uses: actions/create-github-app-token@67018539274d69449ef7c02e8e71183d1719ab42 # v2.1.4
+      with:
+        private-key: ${{ inputs.github-app-pem }}
+        app-id: ${{ inputs.github-app-id }}
+        owner: ${{ github.repository_owner }}
+
+    - name: Determine repository
+      id: repo
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.repository }}" ]; then
+          echo "repository=${{ inputs.repository }}" >> $GITHUB_OUTPUT
+        else
+          echo "repository=${{ github.repository }}" >> $GITHUB_OUTPUT
+        fi
+        echo "📦 Target repository: $(cat $GITHUB_OUTPUT | grep repository | cut -d'=' -f2)"
+
+    - name: Export RENOVATE_* secrets
+      shell: bash
+      env:
+        SECRETS_JSON: ${{ inputs.all-secrets }}
+      run: |
+        # Export secrets to GITHUB_ENV
+        "${{ github.action_path }}/export-secrets.sh"
+
+    - name: Run Renovate
+      uses: renovatebot/github-action@2d941ef4e268e53affdc1f11365c69a73e544f50 # v43.0.14
+      env:
+        GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
+        RENOVATE_DETECT_HOST_RULES_FROM_ENV: "true"
+        RENOVATE_LOG_LEVEL: ${{ inputs.log-level }}
+        RENOVATE_REPOSITORIES: ${{ steps.repo.outputs.repository }}
+        RENOVATE_ONBOARDING_CONFIG: ${{ inputs.onboarding-config }}
+      with:
+        token: ${{ steps.get_token.outputs.token }}
+        configurationFile: ./${{ inputs.renovate-config-file-path }}
+        renovate-image: ${{ inputs.renovate-image }}
+        renovate-version: ${{ inputs.renovate-version }}
