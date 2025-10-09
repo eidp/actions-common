@@ -21,7 +21,7 @@ Key features of this action: - Dynamic secret detection: Automatically detects a
 |      `github-app-pem`     |                                The private key (in PEM format) of the GitHub App used for Renovate                                |   Yes  |                                                                                                                |
 |       `all-secrets`       |JSON string of all secrets (use toJSON(secrets)) or a manually specified JSON object with RENOVATE_* keys. See README for examples.|   Yes  |                                                                                                                |
 |`renovate-config-file-path`|                               The full path to the Renovate configuration file, relative to the root                              |   No   |                                                 `renovate.json`                                                |
-|      `renovate-image`     |                       The Renovate Docker image name to use. If omitted, uses ghcr.io/renovatebot/renovate.                       |   No   |                                           `ghcr.io/renovate/renovate`                                          |
+|      `renovate-image`     |                       The Renovate Docker image name to use. If omitted, uses ghcr.io/renovatebot/renovate.                       |   No   |                                         `ghcr.io/renovatebot/renovate`                                         |
 |     `renovate-version`    |                           The Renovate version to use. If omitted, uses the default version Docker tag.                           |   No   |                                                       ``                                                       |
 |        `log-level`        |                                           Renovate log level (debug, info, warn, error)                                           |   No   |                                                     `debug`                                                    |
 |        `repository`       |                 Repository to run Renovate on. Format: owner/repo Defaults to current repository if not specified.                |   No   |                                                       ``                                                       |
@@ -35,7 +35,7 @@ _None_
 
 ```yaml
 - name: Renovate with Dynamic Secrets
-  uses: eidp/actions-common/renovate@v1
+  uses: eidp/actions-common/renovate@v0
   with:
     # your inputs here
 ```

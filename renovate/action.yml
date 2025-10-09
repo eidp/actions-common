@@ -47,7 +47,7 @@ inputs:
       The Renovate Docker image name to use.
       If omitted, uses ghcr.io/renovatebot/renovate.
     required: false
-    default: 'ghcr.io/renovate/renovate'
+    default: 'ghcr.io/renovatebot/renovate'
   
   renovate-version:
     description: |
