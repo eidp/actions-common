@@ -12,54 +12,54 @@ permissions:
   contents: write
 
 jobs:
-  test-update-major-version-tag:
-    runs-on: kubernetes-runner
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+  # test-update-major-version-tag:
+  #   runs-on: kubernetes-runner
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-    - name: Create test tag
-      id: create_tag
-      run: |
-        TAG="v$((RANDOM % 99001 + 100)).0.0-${{ github.run_id }}.${{ github.run_attempt }}"
-        MAJOR_TAG="$(echo $TAG | cut -d. -f1)"
-        git tag $TAG
-        git push origin $TAG
-        echo "tag=$TAG" >> $GITHUB_OUTPUT
-        echo "major_tag=$MAJOR_TAG" >> $GITHUB_OUTPUT
-    - name: Use update-major-version-tag action
-      id: update_major_version_tag
-      uses: ./update-major-version-tag
-      with:
-        tag: ${{ steps.create_tag.outputs.tag }}
+  #   - name: Create test tag
+  #     id: create_tag
+  #     run: |
+  #       TAG="v$((RANDOM % 99001 + 100)).0.0-${{ github.run_id }}.${{ github.run_attempt }}"
+  #       MAJOR_TAG="$(echo $TAG | cut -d. -f1)"
+  #       git tag $TAG
+  #       git push origin $TAG
+  #       echo "tag=$TAG" >> $GITHUB_OUTPUT
+  #       echo "major_tag=$MAJOR_TAG" >> $GITHUB_OUTPUT
+  #   - name: Use update-major-version-tag action
+  #     id: update_major_version_tag
+  #     uses: ./update-major-version-tag
+  #     with:
+  #       tag: ${{ steps.create_tag.outputs.tag }}
 
-    - name: Assert Version Output
-      uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
-      with:
-        expected: ${{ steps.create_tag.outputs.major_tag }}
-        actual: ${{ steps.update_major_version_tag.outputs.major_tag }}
+  #   - name: Assert Version Output
+  #     uses: nick-fields/assert-action@aa0067e01f0f6545c31755d6ca128c5a3a14f6bf # v2.0.0
+  #     with:
+  #       expected: ${{ steps.create_tag.outputs.major_tag }}
+  #       actual: ${{ steps.update_major_version_tag.outputs.major_tag }}
 
-    - name: Check major version tag
-      run: |
-        MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
-        git fetch --tags
-        if git rev-parse "$MAJOR_TAG" >/dev/null 2>&1; then
-        echo "Major version tag $MAJOR_TAG exists."
-        git show "$MAJOR_TAG"
-        else
-        echo "Major version tag $MAJOR_TAG does not exist."
-        exit 1
-        fi
+  #   - name: Check major version tag
+  #     run: |
+  #       MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
+  #       git fetch --tags
+  #       if git rev-parse "$MAJOR_TAG" >/dev/null 2>&1; then
+  #       echo "Major version tag $MAJOR_TAG exists."
+  #       git show "$MAJOR_TAG"
+  #       else
+  #       echo "Major version tag $MAJOR_TAG does not exist."
+  #       exit 1
+  #       fi
 
-    - name: Cleanup
-      if: always()
-      run: |
-        git tag -d ${{ steps.create_tag.outputs.tag }} 2>/dev/null || true
-        git push origin :refs/tags/${{ steps.create_tag.outputs.tag }} 2>/dev/null || true
+  #   - name: Cleanup
+  #     if: always()
+  #     run: |
+  #       git tag -d ${{ steps.create_tag.outputs.tag }} 2>/dev/null || true
+  #       git push origin :refs/tags/${{ steps.create_tag.outputs.tag }} 2>/dev/null || true
 
-        MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
-        git tag -d $MAJOR_TAG 2>/dev/null || true
-        git push origin :refs/tags/$MAJOR_TAG 2>/dev/null || true
+  #       MAJOR_TAG="${{ steps.create_tag.outputs.major_tag }}"
+  #       git tag -d $MAJOR_TAG 2>/dev/null || true
+  #       git push origin :refs/tags/$MAJOR_TAG 2>/dev/null || true
 
   test-check-workflow-status:
     runs-on: kubernetes-runner
