@@ -35,7 +35,7 @@ _None_
 
 ```yaml
 - name: Renovate with Dynamic Secrets
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     # your inputs here
 ```
@@ -49,7 +49,7 @@ The simplest way to use this action is to pass all your secrets using `toJSON(se
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
@@ -62,7 +62,7 @@ You can also manually specify which secrets to pass. Only secrets with keys star
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
@@ -80,7 +80,7 @@ You can customize the Renovate execution with additional inputs:
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
