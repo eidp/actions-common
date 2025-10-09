@@ -59,7 +59,7 @@ inputs:
   log-level:
     description: 'Renovate log level (debug, info, warn, error)'
     required: false
-    default: 'debug'
+    default: 'info'
   
   repository:
     description: |
