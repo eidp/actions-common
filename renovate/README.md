@@ -21,9 +21,9 @@ Key features of this action: - Dynamic secret detection: Automatically detects a
 |      `github-app-pem`     |                                The private key (in PEM format) of the GitHub App used for Renovate                                |   Yes  |                                                                                                                |
 |       `all-secrets`       |JSON string of all secrets (use toJSON(secrets)) or a manually specified JSON object with RENOVATE_* keys. See README for examples.|   Yes  |                                                                                                                |
 |`renovate-config-file-path`|                               The full path to the Renovate configuration file, relative to the root                              |   No   |                                                 `renovate.json`                                                |
-|      `renovate-image`     |                       The Renovate Docker image name to use. If omitted, uses ghcr.io/renovatebot/renovate.                       |   No   |                                           `ghcr.io/renovate/renovate`                                          |
+|      `renovate-image`     |                       The Renovate Docker image name to use. If omitted, uses ghcr.io/renovatebot/renovate.                       |   No   |                                         `ghcr.io/renovatebot/renovate`                                         |
 |     `renovate-version`    |                           The Renovate version to use. If omitted, uses the default version Docker tag.                           |   No   |                                                       ``                                                       |
-|        `log-level`        |                                           Renovate log level (debug, info, warn, error)                                           |   No   |                                                     `debug`                                                    |
+|        `log-level`        |                                           Renovate log level (debug, info, warn, error)                                           |   No   |                                                     `info`                                                     |
 |        `repository`       |                 Repository to run Renovate on. Format: owner/repo Defaults to current repository if not specified.                |   No   |                                                       ``                                                       |
 |    `onboarding-config`    |                               Onboarding config to use when generating a onboarding PR for Renovate.                              |   No   |`{ "$schema": "https://docs.renovatebot.com/renovate-schema.json", "extends": ["github>eidp/renovate-config"] }`|
 
@@ -49,7 +49,7 @@ The simplest way to use this action is to pass all your secrets using `toJSON(se
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
@@ -62,7 +62,7 @@ You can also manually specify which secrets to pass. Only secrets with keys star
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
@@ -80,7 +80,7 @@ You can customize the Renovate execution with additional inputs:
 
 ```yaml
 - name: Run Renovate
-  uses: eidp/actions-common/renovate@v0
+  uses: eidp/actions-common/renovate@v1
   with:
     github-app-id: ${{ secrets.RENOVATE_APP_ID }}
     github-app-pem: ${{ secrets.RENOVATE_APP_PEM }}
