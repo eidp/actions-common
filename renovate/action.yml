@@ -56,11 +56,6 @@ inputs:
     required: false
     default: ''
   
-  log-level:
-    description: 'Renovate log level (debug, info, warn, error)'
-    required: false
-    default: 'info'
-  
   repository:
     description: |
       Repository to run Renovate on.
@@ -132,7 +127,6 @@ runs:
       env:
         GITHUB_TOKEN: ${{ steps.get_token.outputs.token }}
         RENOVATE_DETECT_HOST_RULES_FROM_ENV: "true"
-        RENOVATE_LOG_LEVEL: ${{ inputs.log-level }}
         RENOVATE_REPOSITORIES: ${{ steps.repo.outputs.repository }}
         RENOVATE_ONBOARDING_CONFIG: ${{ inputs.onboarding-config }}
       with:
