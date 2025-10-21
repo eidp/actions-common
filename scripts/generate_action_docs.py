@@ -91,8 +91,6 @@ def parse_action_file(action_dir: Path, repo_ref: str):
     custom_readme = action_dir / "EXAMPLES.md"
     if custom_readme.exists():
         custom_content = custom_readme.read_text().strip()
-        # Unescape GitHub Actions syntax
-        custom_content = custom_content.replace(r'\$\{\{', '${{').replace(r'\}\}', '}}')
         block += f"\n\n{custom_content}"
 
     return name, block.strip()
@@ -104,6 +102,8 @@ def update_readme(readme_path: Path, name: str, block: str):
         return
 
     content = block + "\n"
+    # Unescape GitHub Actions syntax
+    content = content.replace(r'\$\{\{', '${{').replace(r'\}\}', '}}')
 
     readme_path.write_text(content)
     print(f"✅ Generated: {readme_path} with action: {name}")
