@@ -59,8 +59,10 @@ def parse_action_file(action_dir: Path, repo_ref: str):
             "Description": meta.get("description", "").strip().replace("\n", " "),
         })
 
-    inputs_md = markdown_table(input_rows).set_params(row_sep="markdown", quote=False).get_markdown() if input_rows else "_None_"
-    outputs_md = markdown_table(output_rows).set_params(row_sep="markdown", quote=False).get_markdown() if output_rows else "_None_"
+    inputs_md = markdown_table(input_rows).set_params(row_sep="markdown", quote=False, padding_width=1,
+                                                    padding_weight="right").get_markdown() if input_rows else "_None_"
+    outputs_md = markdown_table(output_rows).set_params(row_sep="markdown", quote=False, padding_width=1,
+                                                    padding_weight="right").get_markdown() if output_rows else "_None_"
 
     header = (
         "<!-- NOTE: This file's contents are automatically generated. Do not edit manually. -->\n"
