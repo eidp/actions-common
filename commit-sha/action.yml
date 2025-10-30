@@ -28,6 +28,10 @@ runs:
     env:
       COMMIT_SHORT_SHA_LENGTH: ${{ inputs.commit-short-sha-length }}
     run: |
-      COMMIT_SHA="${{ github.event.pull_request.head.sha || github.sha }}"
+      if [ -n "${{ github.event.pull_request.head.sha }}" ]; then
+        COMMIT_SHA="${{ github.event.pull_request.head.sha }}"
+      else
+        COMMIT_SHA=$(git rev-parse HEAD)
+      fi
       echo "commit-sha=$COMMIT_SHA" >> $GITHUB_OUTPUT
       echo "commit-short-sha=${COMMIT_SHA:0:$COMMIT_SHORT_SHA_LENGTH}" >> $GITHUB_OUTPUT
