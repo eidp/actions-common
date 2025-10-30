@@ -5,16 +5,16 @@ Set the source commit SHA for a workflow as output variable. Regardless of wheth
 
 ## 🔧 Inputs
 
-|           Name          |          Description         |Required|Default|
-|-------------------------|------------------------------|--------|-------|
-|`commit-short-sha-length`|Length of the short commit SHA|   No   |  `7`  |
+|Name                      |Description                    |Required|Default|
+|--------------------------|-------------------------------|--------|-------|
+|`commit-short-sha-length` |Length of the short commit SHA |No      |`7`    |
 
 ## 📤 Outputs
 
-|    Name   |             Description             |
-|-----------|-------------------------------------|
-|   `sha`   | The commit SHA used as source commit|
-|`short-sha`|The short commit SHA as source commit|
+|Name        |Description                           |
+|------------|--------------------------------------|
+|`sha`       |The commit SHA used as source commit  |
+|`short-sha` |The short commit SHA as source commit |
 
 ## 🚀 Usage
 

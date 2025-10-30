@@ -14,14 +14,14 @@ This action requires a GitHub token with the following permissions:
 
 ## 🔧 Inputs
 
-|          Name         |                                                                                 Description                                                                                |Required|Default|
-|-----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|-------|
-|     `github-token`    |                                                                 GitHub token to authenticate API requests.                                                                 |   Yes  |       |
-|    `excluded-jobs`    |Comma-separated list of job name patterns to exclude from status checks. Supports glob patterns (e.g., 'deploy-*,test-optional'). Excluded jobs are not required to succeed.|   No   |   ``  |
-|   `timeout-minutes`   |                                              Maximum time to wait for all jobs to complete (in minutes). Default: 30 minutes.                                              |   No   |  `30` |
-| `initial-wait-seconds`|                                         Time to wait for the first job to appear in the workflow (in seconds). Default: 10 seconds.                                        |   No   |  `10` |
-| `skipped-jobs-succeed`|                                  Whether to treat skipped jobs as successful. Set to 'false' to fail if any job is skipped. Default: true.                                 |   No   | `true`|
-|`poll-interval-seconds`|                                              Time between polling API for job status updates (in seconds). Default: 5 seconds.                                             |   No   |  `5`  |
+|Name                    |Description                                                                                                                                                                  |Required|Default|
+|------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|-------|
+|`github-token`          |GitHub token to authenticate API requests.                                                                                                                                   |Yes     |       |
+|`excluded-jobs`         |Comma-separated list of job name patterns to exclude from status checks. Supports glob patterns (e.g., 'deploy-*,test-optional'). Excluded jobs are not required to succeed. |No      |``     |
+|`timeout-minutes`       |Maximum time to wait for all jobs to complete (in minutes). Default: 30 minutes.                                                                                             |No      |`30`   |
+|`initial-wait-seconds`  |Time to wait for the first job to appear in the workflow (in seconds). Default: 10 seconds.                                                                                  |No      |`10`   |
+|`skipped-jobs-succeed`  |Whether to treat skipped jobs as successful. Set to 'false' to fail if any job is skipped. Default: true.                                                                    |No      |`true` |
+|`poll-interval-seconds` |Time between polling API for job status updates (in seconds). Default: 5 seconds.                                                                                            |No      |`5`    |
 
 ## 📤 Outputs
 
