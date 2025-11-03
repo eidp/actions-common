@@ -4,9 +4,11 @@
   entry: generate-workflow-docs
   language: python
   types: [text]
+  pass_filenames: false
 - id: generate-action-docs
   name: generate-action-docs
   description: Generates documentation for GitHub actions.
   entry: generate-action-docs
   language: python
   types: [text]
+  pass_filenames: false
