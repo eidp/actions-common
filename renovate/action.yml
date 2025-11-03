@@ -40,7 +40,6 @@ inputs:
   renovate-config-file-path:
     description: 'The full path to the Renovate configuration file, relative to the root'
     required: false
-    default: 'renovate.json'
   
   renovate-image:
     description: |
@@ -131,6 +130,6 @@ runs:
         RENOVATE_ONBOARDING_CONFIG: ${{ inputs.onboarding-config }}
       with:
         token: ${{ steps.get_token.outputs.token }}
-        configurationFile: ./${{ inputs.renovate-config-file-path }}
+        configurationFile: ${{ inputs.renovate-config-file-path && format('./{0}', inputs.renovate-config-file-path) }}
         renovate-image: ${{ inputs.renovate-image }}
         renovate-version: ${{ inputs.renovate-version }}
