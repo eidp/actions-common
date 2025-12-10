@@ -3,7 +3,8 @@
 
 Run Renovate with auto-detected RENOVATE_* secrets from GitHub Secrets.
 Renovate - http://renovatebot.com - is an open-source tool that automates dependency updates across your projects. It helps keep your dependencies up-to-date by creating pull requests when new versions are available, reducing technical debt and security vulnerabilities.
-Key features of this action: - Dynamic secret detection: Automatically detects and passes all RENOVATE_*
+Key features of this action:
+- Dynamic secret detection: Automatically detects and passes all RENOVATE_*
   secrets from your GitHub Secrets as environment variables. Existing environment variables
   will be overwritten if they conflict.
 - GitHub App authentication: Uses a GitHub App for improved API rate limits
