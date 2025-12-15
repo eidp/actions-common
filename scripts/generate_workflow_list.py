@@ -39,7 +39,7 @@ def generate_shared_workflow_list() -> str:
 
     content = f"{LIST_HEADER}\n\n"
     content += "The following reusable workflows are available in this repository:\n\n"
-    content += "\n".join(items)
+    content += "\n".join(sorted(items))
     return f"{MARKER_START}\n\n{content}\n\n{MARKER_END}"
 
 def update_readme(path: Path, new_list: str):
