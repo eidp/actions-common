@@ -23,7 +23,7 @@ def _generate_action_list() -> str:
         return ""
     content = f"{ACTIONS_HEADER}\n\n"
     content += "The following GitHub Actions are available in this repository:\n\n"
-    content += "\n".join(items)
+    content += "\n".join(sorted(items))
     return f"{ACTIONS_MARKER_START}\n\n{content}\n\n{ACTIONS_MARKER_END}"
 
 def update_readme(content_block):
