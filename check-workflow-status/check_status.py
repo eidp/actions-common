@@ -2,6 +2,7 @@ import os
 import sys
 import time
 import urllib.request
+import urllib.error
 import json
 import fnmatch
 
@@ -12,14 +13,42 @@ def get_env(name, required=True, default=None):
         raise ValueError(f"Missing required environment variable: {name}")
     return value
 
-def fetch_json(url, token):
+
+def fetch_json(url, token, max_retries=3, retry_delay_seconds=3):
     req = urllib.request.Request(url)
     req.add_header("Authorization", f"Bearer {token}")
     req.add_header("Accept", "application/vnd.github+json")
-    with urllib.request.urlopen(req) as resp:
-        if resp.status != 200:
-            raise RuntimeError(f"Failed to fetch {url} (HTTP {resp.status})\nResponse: {resp.read().decode()}")
-        return json.load(resp)
+
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            with urllib.request.urlopen(req) as resp:
+                if resp.status != 200:
+                    raise RuntimeError(
+                        f"Failed to fetch {url} (HTTP {resp.status})\nResponse: {resp.read().decode()}"
+                    )
+                return json.load(resp)
+        except urllib.error.HTTPError as e:
+            if e.code >= 500:
+                last_error = e
+                print(
+                    f"Warning: transient HTTP {e.code} fetching {url} (attempt {attempt + 1}/{max_retries}), retrying in {retry_delay_seconds}s...",
+                    file=sys.stderr,
+                )
+                time.sleep(retry_delay_seconds)
+            else:
+                raise
+        except urllib.error.URLError as e:
+            last_error = e
+            print(
+                f"Warning: network error fetching {url} (attempt {attempt + 1}/{max_retries}): {e.reason}, retrying in {retry_delay_seconds}s...",
+                file=sys.stderr,
+            )
+            time.sleep(retry_delay_seconds)
+
+    raise RuntimeError(
+        f"Failed to fetch {url} after {max_retries} attempts"
+    ) from last_error
 
 
 def check_status(
@@ -48,7 +77,9 @@ def check_status(
 
     # Phase 1: Wait the full initial wait period for jobs to appear
     jobs_api_url = f"https://api.github.com/repos/{repo}/actions/runs/{run_id}/jobs"
-    print(f"Waiting {initial_wait_seconds}s for all jobs to appear (excluding current job: '{current_job_name}')...")
+    print(
+        f"Waiting {initial_wait_seconds}s for all jobs to appear (excluding current job: '{current_job_name}')..."
+    )
 
     initial_wait_end = start_time + initial_wait_seconds
     other_jobs_found = False
@@ -58,12 +89,19 @@ def check_status(
     # Always fetch jobs at least once, then continue polling until initial_wait_seconds
     while True:
         if time.time() - start_time > timeout_seconds:
-            print(f"Overall timeout of {timeout_minutes} minutes exceeded.", file=sys.stderr)
+            print(
+                f"Overall timeout of {timeout_minutes} minutes exceeded.",
+                file=sys.stderr,
+            )
             return False
 
         jobs_response = fetch_json(jobs_api_url, github_token)
         all_jobs = jobs_response.get("jobs", [])
-        other_jobs = [j for j in all_jobs if j["name"] != current_job_name and not is_excluded(j["name"])]
+        other_jobs = [
+            j
+            for j in all_jobs
+            if j["name"] != current_job_name and not is_excluded(j["name"])
+        ]
 
         if other_jobs:
             other_jobs_found = True
@@ -75,7 +113,10 @@ def check_status(
         time.sleep(1)
 
     if not other_jobs_found:
-        print(f"No jobs found after {initial_wait_seconds}s initial wait period.", file=sys.stderr)
+        print(
+            f"No jobs found after {initial_wait_seconds}s initial wait period.",
+            file=sys.stderr,
+        )
         print(f"Current job name: '{current_job_name}'", file=sys.stderr)
         all_job_names = [j["name"] for j in all_jobs]
         print(f"All jobs in workflow: {all_job_names}", file=sys.stderr)
@@ -84,15 +125,23 @@ def check_status(
     print(f"Initial wait complete. Found {len(other_jobs)} job(s) to monitor.")
 
     # Phase 2: Monitor all jobs until completion or timeout
-    print(f"Monitoring jobs (polling every {poll_interval_seconds}s, timeout: {timeout_minutes} minutes)...")
+    print(
+        f"Monitoring jobs (polling every {poll_interval_seconds}s, timeout: {timeout_minutes} minutes)..."
+    )
     discovered_jobs = set()
     completed_jobs = {}
 
     while True:
         elapsed = time.time() - start_time
         if elapsed > timeout_seconds:
-            print(f"Overall timeout of {timeout_minutes} minutes exceeded.", file=sys.stderr)
-            print(f"Completed jobs: {len(completed_jobs)}/{len(discovered_jobs)}", file=sys.stderr)
+            print(
+                f"Overall timeout of {timeout_minutes} minutes exceeded.",
+                file=sys.stderr,
+            )
+            print(
+                f"Completed jobs: {len(completed_jobs)}/{len(discovered_jobs)}",
+                file=sys.stderr,
+            )
             incomplete = discovered_jobs - set(completed_jobs.keys())
             if incomplete:
                 print(f"Incomplete jobs: {sorted(incomplete)}", file=sys.stderr)
@@ -100,7 +149,11 @@ def check_status(
 
         jobs_response = fetch_json(jobs_api_url, github_token)
         all_jobs = jobs_response.get("jobs", [])
-        other_jobs = [j for j in all_jobs if j["name"] != current_job_name and not is_excluded(j["name"])]
+        other_jobs = [
+            j
+            for j in all_jobs
+            if j["name"] != current_job_name and not is_excluded(j["name"])
+        ]
 
         # Track all discovered jobs
         for job in other_jobs:
@@ -123,26 +176,37 @@ def check_status(
                     if skipped_jobs_succeed:
                         print(f"✓ Job '{job_name}' was skipped (treated as success).")
                     else:
-                        print(f"✗ Job '{job_name}' was skipped (treated as failure).", file=sys.stderr)
+                        print(
+                            f"✗ Job '{job_name}' was skipped (treated as failure).",
+                            file=sys.stderr,
+                        )
                         return False
                 elif conclusion in ("failure", "cancelled"):
                     print(f"✗ Job '{job_name}' {conclusion}.", file=sys.stderr)
                     return False
                 else:
-                    print(f"✗ Job '{job_name}' has unexpected conclusion: {conclusion}.", file=sys.stderr)
+                    print(
+                        f"✗ Job '{job_name}' has unexpected conclusion: {conclusion}.",
+                        file=sys.stderr,
+                    )
                     return False
 
         # Check if all discovered jobs are complete
         if len(completed_jobs) == len(discovered_jobs) and len(discovered_jobs) > 0:
-            print(f"All {len(discovered_jobs)} job(s) completed successfully in {elapsed:.1f}s.")
+            print(
+                f"All {len(discovered_jobs)} job(s) completed successfully in {elapsed:.1f}s."
+            )
             return True
 
         # Show progress
         in_progress = discovered_jobs - set(completed_jobs.keys())
         if in_progress:
-            print(f"In progress ({len(completed_jobs)}/{len(discovered_jobs)} complete): {sorted(in_progress)}")
+            print(
+                f"In progress ({len(completed_jobs)}/{len(discovered_jobs)} complete): {sorted(in_progress)}"
+            )
 
         time.sleep(poll_interval_seconds)
+
 
 def main():
     try:
@@ -154,13 +218,21 @@ def main():
         # Parse optional configuration (with defaults in check_status function)
         kwargs = {}
         if get_env("INPUT_TIMEOUT_MINUTES", required=False):
-            kwargs["timeout_minutes"] = int(get_env("INPUT_TIMEOUT_MINUTES", required=False))
+            kwargs["timeout_minutes"] = int(
+                get_env("INPUT_TIMEOUT_MINUTES", required=False)
+            )
         if get_env("INPUT_INITIAL_WAIT_SECONDS", required=False):
-            kwargs["initial_wait_seconds"] = int(get_env("INPUT_INITIAL_WAIT_SECONDS", required=False))
+            kwargs["initial_wait_seconds"] = int(
+                get_env("INPUT_INITIAL_WAIT_SECONDS", required=False)
+            )
         if get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False):
-            kwargs["skipped_jobs_succeed"] = get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False).lower() == "true"
+            kwargs["skipped_jobs_succeed"] = (
+                get_env("INPUT_SKIPPED_JOBS_SUCCEED", required=False).lower() == "true"
+            )
         if get_env("INPUT_POLL_INTERVAL_SECONDS", required=False):
-            kwargs["poll_interval_seconds"] = int(get_env("INPUT_POLL_INTERVAL_SECONDS", required=False))
+            kwargs["poll_interval_seconds"] = int(
+                get_env("INPUT_POLL_INTERVAL_SECONDS", required=False)
+            )
         if get_env("INPUT_EXCLUDED_JOBS", required=False):
             kwargs["excluded_jobs"] = get_env("INPUT_EXCLUDED_JOBS", required=False)
     except Exception as e:
@@ -172,9 +244,10 @@ def main():
         repo=repo,
         run_id=run_id,
         current_job_name=current_job_name,
-        **kwargs
+        **kwargs,
     )
     sys.exit(0 if result else 1)
+
 
 if __name__ == "__main__":
     main()

@@ -1,8 +1,10 @@
 # Unit tests for check_status.py
+import io
 import os
 import sys
 import json
 import tempfile
+import urllib.error
 from unittest import mock
 import check_status
 
@@ -11,12 +13,14 @@ import check_status
 def test_dynamic_job_discovery():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "build", "conclusion": "success"},
-                {"name": "test", "conclusion": "success"},
-                {"name": "lint", "conclusion": "success"}
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "build", "conclusion": "success"},
+                    {"name": "test", "conclusion": "success"},
+                    {"name": "lint", "conclusion": "success"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -40,21 +44,27 @@ def test_dynamic_job_appearance():
             call_count[0] += 1
             # First call: only check-workflow-status job
             if call_count[0] == 1:
-                return {"jobs": [
-                    {"name": "check-workflow-status", "conclusion": None},
-                ]}
+                return {
+                    "jobs": [
+                        {"name": "check-workflow-status", "conclusion": None},
+                    ]
+                }
             # Second call: test job appears
             elif call_count[0] == 2:
-                return {"jobs": [
-                    {"name": "check-workflow-status", "conclusion": None},
-                    {"name": "test", "conclusion": None},
-                ]}
+                return {
+                    "jobs": [
+                        {"name": "check-workflow-status", "conclusion": None},
+                        {"name": "test", "conclusion": None},
+                    ]
+                }
             # Third call: test job completes
             else:
-                return {"jobs": [
-                    {"name": "check-workflow-status", "conclusion": None},
-                    {"name": "test", "conclusion": "success"},
-                ]}
+                return {
+                    "jobs": [
+                        {"name": "check-workflow-status", "conclusion": None},
+                        {"name": "test", "conclusion": "success"},
+                    ]
+                }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -73,10 +83,15 @@ def test_dynamic_job_appearance():
 def test_current_job_excluded():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},  # This is the current job
-                {"name": "test", "conclusion": "success"},
-            ]}
+            return {
+                "jobs": [
+                    {
+                        "name": "check-workflow-status",
+                        "conclusion": None,
+                    },  # This is the current job
+                    {"name": "test", "conclusion": "success"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -95,10 +110,12 @@ def test_current_job_excluded():
 def test_skipped_jobs_succeed_true():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "test", "conclusion": "skipped"},
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "test", "conclusion": "skipped"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -117,10 +134,12 @@ def test_skipped_jobs_succeed_true():
 def test_skipped_jobs_succeed_false():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "test", "conclusion": "skipped"},
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "test", "conclusion": "skipped"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -140,11 +159,13 @@ def test_skipped_jobs_succeed_false():
 def test_job_failure_immediate():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "test", "conclusion": "failure"},
-                {"name": "build", "conclusion": None},  # Still in progress
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "test", "conclusion": "failure"},
+                    {"name": "build", "conclusion": None},  # Still in progress
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -163,10 +184,12 @@ def test_job_failure_immediate():
 def test_overall_timeout():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "test", "conclusion": None},  # Never completes
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "test", "conclusion": None},  # Never completes
+                ]
+            }
         return {}
 
     # Mock time to simulate timeout
@@ -197,9 +220,14 @@ def test_overall_timeout():
 def test_no_jobs_found():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},  # Only current job
-            ]}
+            return {
+                "jobs": [
+                    {
+                        "name": "check-workflow-status",
+                        "conclusion": None,
+                    },  # Only current job
+                ]
+            }
         return {}
 
     # Mock time for initial wait
@@ -229,12 +257,14 @@ def test_no_jobs_found():
 def test_excluded_jobs_exact():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "build", "conclusion": "success"},
-                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
-                {"name": "test", "conclusion": "success"},
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "build", "conclusion": "success"},
+                    {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
+                    {"name": "test", "conclusion": "success"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -254,13 +284,21 @@ def test_excluded_jobs_exact():
 def test_excluded_jobs_glob():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "build", "conclusion": "success"},
-                {"name": "deploy-dev", "conclusion": "failure"},  # Excluded by deploy-*
-                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded by deploy-*
-                {"name": "test", "conclusion": "success"},
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "build", "conclusion": "success"},
+                    {
+                        "name": "deploy-dev",
+                        "conclusion": "failure",
+                    },  # Excluded by deploy-*
+                    {
+                        "name": "deploy-staging",
+                        "conclusion": "failure",
+                    },  # Excluded by deploy-*
+                    {"name": "test", "conclusion": "success"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -280,13 +318,21 @@ def test_excluded_jobs_glob():
 def test_excluded_jobs_multiple():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "build", "conclusion": "success"},
-                {"name": "deploy-prod", "conclusion": "failure"},  # Excluded by deploy-*
-                {"name": "test-optional", "conclusion": "failure"},  # Excluded by *-optional
-                {"name": "test-required", "conclusion": "success"},
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {"name": "build", "conclusion": "success"},
+                    {
+                        "name": "deploy-prod",
+                        "conclusion": "failure",
+                    },  # Excluded by deploy-*
+                    {
+                        "name": "test-optional",
+                        "conclusion": "failure",
+                    },  # Excluded by *-optional
+                    {"name": "test-required", "conclusion": "success"},
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -299,18 +345,25 @@ def test_excluded_jobs_multiple():
                 excluded_jobs="deploy-*,*-optional",
             )
 
-    assert result is True, f"Expected success (deploy-* and *-optional excluded), got {result}"
+    assert result is True, (
+        f"Expected success (deploy-* and *-optional excluded), got {result}"
+    )
 
 
 # Test: Non-excluded job fails
 def test_excluded_jobs_non_excluded_fails():
     def test_fetch_json(url, token):
         if "actions/runs" in url and "jobs" in url:
-            return {"jobs": [
-                {"name": "check-workflow-status", "conclusion": None},
-                {"name": "build", "conclusion": "failure"},  # NOT excluded, should fail
-                {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
-            ]}
+            return {
+                "jobs": [
+                    {"name": "check-workflow-status", "conclusion": None},
+                    {
+                        "name": "build",
+                        "conclusion": "failure",
+                    },  # NOT excluded, should fail
+                    {"name": "deploy-staging", "conclusion": "failure"},  # Excluded
+                ]
+            }
         return {}
 
     with mock.patch("check_status.fetch_json", side_effect=test_fetch_json):
@@ -324,6 +377,89 @@ def test_excluded_jobs_non_excluded_fails():
             )
 
     assert result is False, f"Expected failure (build failed), got {result}"
+
+
+# Test: fetch_json retries on transient 5xx errors and eventually succeeds
+def test_fetch_json_retries_on_transient_error():
+    response_body = json.dumps({"jobs": []}).encode()
+
+    # First call raises a 502; second call returns a valid response
+    mock_response = mock.MagicMock()
+    mock_response.__enter__ = lambda s: s
+    mock_response.__exit__ = mock.MagicMock(return_value=False)
+    mock_response.status = 200
+    mock_response.read = mock.MagicMock(return_value=response_body)
+    mock_response.read.side_effect = None
+
+    def fake_read():
+        return response_body
+
+    mock_response.read = fake_read
+
+    # Simulate urlopen: raise 502 on first call, succeed on second
+    side_effects = [
+        urllib.error.HTTPError(
+            url="http://example.com",
+            code=502,
+            msg="Bad Gateway",
+            hdrs=None,  # type: ignore[arg-type]
+            fp=None,
+        ),
+        mock_response,
+    ]
+
+    with mock.patch("urllib.request.urlopen", side_effect=side_effects):
+        with mock.patch("time.sleep") as mock_sleep:
+            result = check_status.fetch_json("http://example.com", "dummy_token")
+
+    assert result == {"jobs": []}, f"Expected valid response after retry, got {result}"
+    mock_sleep.assert_called_once_with(3)  # One retry delay
+
+
+# Test: fetch_json does not retry on non-5xx errors (e.g. 404)
+def test_fetch_json_no_retry_on_client_error():
+    side_effects = [
+        urllib.error.HTTPError(
+            url="http://example.com",
+            code=404,
+            msg="Not Found",
+            hdrs=None,  # type: ignore[arg-type]
+            fp=None,
+        ),
+    ]
+
+    with mock.patch("urllib.request.urlopen", side_effect=side_effects):
+        with mock.patch("time.sleep") as mock_sleep:
+            try:
+                check_status.fetch_json("http://example.com", "dummy_token")
+                assert False, "Expected HTTPError to be raised"
+            except urllib.error.HTTPError as e:
+                assert e.code == 404
+
+    mock_sleep.assert_not_called()  # No retry for client errors
+
+
+# Test: fetch_json retries on network-level URLError and eventually succeeds
+def test_fetch_json_retries_on_network_error():
+    response_body = json.dumps({"jobs": []}).encode()
+
+    mock_response = mock.MagicMock()
+    mock_response.__enter__ = lambda s: s
+    mock_response.__exit__ = mock.MagicMock(return_value=False)
+    mock_response.status = 200
+    mock_response.read = lambda: response_body
+
+    side_effects = [
+        urllib.error.URLError(reason="Connection reset by peer"),
+        mock_response,
+    ]
+
+    with mock.patch("urllib.request.urlopen", side_effect=side_effects):
+        with mock.patch("time.sleep") as mock_sleep:
+            result = check_status.fetch_json("http://example.com", "dummy_token")
+
+    assert result == {"jobs": []}, f"Expected valid response after retry, got {result}"
+    mock_sleep.assert_called_once_with(3)
 
 
 def main():
@@ -363,7 +499,17 @@ def main():
     print("Testing excluded jobs (non-excluded fails)...")
     test_excluded_jobs_non_excluded_fails()
 
+    print("Testing fetch_json retries on transient 502 error...")
+    test_fetch_json_retries_on_transient_error()
+
+    print("Testing fetch_json does not retry on 404 client error...")
+    test_fetch_json_no_retry_on_client_error()
+
+    print("Testing fetch_json retries on network-level URLError...")
+    test_fetch_json_retries_on_network_error()
+
     print("All tests passed.")
+
 
 if __name__ == "__main__":
     main()
