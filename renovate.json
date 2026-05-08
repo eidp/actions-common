@@ -2,5 +2,26 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>eidp/renovate-config"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": ["/^\\.github/workflows/_renovate\\.yml$/"],
+      "matchStrings": [
+        "renovate-version:\\s*[\"'](?<currentValue>[^\"']+)[\"']"
+      ],
+      "depNameTemplate": "ghcr.io/renovatebot/renovate",
+      "datasourceTemplate": "docker"
+    }
+  ],
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "renovatebot/github-action",
+        "ghcr.io/renovatebot/renovate"
+      ],
+      "groupName": "Renovate",
+      "schedule": ["before 4am on monday"]
+    }
   ]
 }
