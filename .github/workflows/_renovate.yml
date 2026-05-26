@@ -26,7 +26,7 @@ jobs:
       uses: ./renovate
       with:
         renovate-image: "cr.eidp.io/docker/renovate/renovate"
-        renovate-version: "43.176.1"
+        renovate-version: "43.195.8"
         github-app-id: ${{ secrets.DEP_MANAGER_GITHUB_APP_ID }}
         github-app-pem: ${{ secrets.DEP_MANAGER_GITHUB_APP_PEM_FILE }}
         all-secrets: ${{ toJSON(secrets) }}
