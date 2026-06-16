@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
 
       - name: Verify failure was detected
-        uses: nick-fields/assert-action@22dd2a66ef733fe92022d3704183ac007463eecb # v3.0.0
+        uses: nick-fields/assert-action@9d4e34b06ce426ffbec11d91e220b8a90fd36bdb # v3.0.1
         with:
           expected: failure
           actual: ${{ steps.check-status.outcome }}
