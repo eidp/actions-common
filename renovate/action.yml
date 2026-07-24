@@ -128,6 +128,7 @@ runs:
         RENOVATE_DETECT_HOST_RULES_FROM_ENV: "true"
         RENOVATE_REPOSITORIES: ${{ steps.repo.outputs.repository }}
         RENOVATE_ONBOARDING_CONFIG: ${{ inputs.onboarding-config }}
+        RENOVATE_ALLOWED_UNSAFE_EXECUTIONS: '["mise"]'
       with:
         token: ${{ steps.get_token.outputs.token }}
         configurationFile: ${{ inputs.renovate-config-file-path && format('./{0}', inputs.renovate-config-file-path) }}
