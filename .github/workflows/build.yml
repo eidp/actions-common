@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   test-check-workflow-status:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-slim
     steps:
     - name: Checkout code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -28,7 +28,7 @@ jobs:
       run: python3 test_check_status.py
 
   test-commit-sha:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-slim
     steps:
     - name: Checkout code
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -51,7 +51,7 @@ jobs:
         comparison: 'startsWith'
 
   check-workflow-status:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-slim
     permissions:
       contents: read
       actions: read

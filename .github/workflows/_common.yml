@@ -12,4 +12,4 @@ jobs:
   common:
     uses: ./.github/workflows/common.yml
     with:
-      runs-on: kubernetes-runner
+      runs-on: ubuntu-slim
