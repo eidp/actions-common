@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   success-job:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -26,7 +26,7 @@ jobs:
         run: echo "This job succeeds"
 
   skipped-job:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-latest
     name: This job is always skipped
     if: false
     steps:
@@ -34,7 +34,7 @@ jobs:
         run: echo "This job is always skipped"
 
   check-workflow-status:
-    runs-on: kubernetes-runner
+    runs-on: ubuntu-latest
     if: always()
     permissions:
       contents: read
