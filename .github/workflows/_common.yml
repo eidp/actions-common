@@ -12,4 +12,4 @@ jobs:
   common:
     uses: ./.github/workflows/common.yml
     with:
-      runs-on: ubuntu-slim
+      runs-on: ubuntu-latest

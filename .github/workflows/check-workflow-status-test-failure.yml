@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   success-job:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -27,7 +27,7 @@ jobs:
 
   failing-job:
     name: This job is supposed to fail
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     continue-on-error: true
     steps:
       - name: Checkout code
@@ -38,7 +38,7 @@ jobs:
           exit 1
 
   check-workflow-status:
-    runs-on: ubuntu-slim
+    runs-on: ubuntu-latest
     if: always()
     permissions:
       contents: read
